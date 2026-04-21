@@ -1,0 +1,199 @@
+﻿"use client";
+
+import { useState, useEffect } from "react";
+import Image from "next/image";
+
+type Hero = {
+  name: string;
+  image: string;
+  role: string[];
+  damage: string | string[];
+  type: string;
+  gender: string;
+  traits: string[];
+};
+
+const heroes: Hero[] = [
+  { name: "Miya", image: "https://static.wikia.nocookie.net/mobile-legends/images/a/a2/Miya.png", role: ["marksman"], damage: "physical", type: "ranged", gender: "female", traits: ["mobility", "burst", "attack speed"] },
+  { name: "Balmond", image: "https://static.wikia.nocookie.net/mobile-legends/images/a/a0/Balmond.png", role: ["fighter"], damage: "physical", type: "melee", gender: "male", traits: ["sustain", "damage", "true damage"] },
+  { name: "Saber", image: "https://static.wikia.nocookie.net/mobile-legends/images/0/07/Saber.png", role: ["assassin"], damage: "physical", type: "melee", gender: "male", traits: ["burst", "charge", "single target"] },
+  { name: "Alice", image: "https://static.wikia.nocookie.net/mobile-legends/images/6/6f/Alice.png", role: ["mage", "tank"], damage: "magic", type: "ranged", gender: "female", traits: ["sustain", "mobility", "lifesteal"] },
+  { name: "Nana", image: "https://static.wikia.nocookie.net/mobile-legends/images/6/63/Nana.png", role: ["mage", "support"], damage: "magic", type: "ranged", gender: "female", traits: ["crowd control", "poke", "annoying"] },
+  { name: "Tigreal", image: "https://static.wikia.nocookie.net/mobile-legends/images/c/c8/Tigreal.png", role: ["tank", "support"], damage: "physical", type: "melee", gender: "male", traits: ["crowd control", "durability", "initiate"] },
+  { name: "Alucard", image: "https://static.wikia.nocookie.net/mobile-legends/images/1/10/Alucard.png", role: ["fighter", "assassin"], damage: "physical", type: "melee", gender: "male", traits: ["lifesteal", "sustain", "mobility"] },
+  { name: "Franco", image: "https://static.wikia.nocookie.net/mobile-legends/images/2/21/Franco.png", role: ["tank", "support"], damage: "physical", type: "melee", gender: "male", traits: ["crowd control", "initiate", "hook"] },
+  { name: "Bane", image: "https://static.wikia.nocookie.net/mobile-legends/images/7/77/Bane.png", role: ["fighter", "mage"], damage: ["physical", "magic"], type: "melee", gender: "male", traits: ["push", "poke", "sustain"] },
+  { name: "Bruno", image: "https://static.wikia.nocookie.net/mobile-legends/images/9/90/Bruno.png", role: ["marksman"], damage: "physical", type: "ranged", gender: "male", traits: ["critical", "burst"] },
+  { name: "Clint", image: "https://static.wikia.nocookie.net/mobile-legends/images/f/f6/Clint.png", role: ["marksman"], damage: "physical", type: "ranged", gender: "male", traits: ["burst", "poke", "passive"] },
+  { name: "Rafaela", image: "https://static.wikia.nocookie.net/mobile-legends/images/c/c8/Rafaela.png", role: ["support"], damage: "magic", type: "ranged", gender: "female", traits: ["heal", "mobility", "poke"] },
+  { name: "Eudora", image: "https://static.wikia.nocookie.net/mobile-legends/images/c/cc/Eudora.png", role: ["mage"], damage: "magic", type: "ranged", gender: "female", traits: ["burst", "crowd control", "stun"] },
+  { name: "Zilong", image: "https://static.wikia.nocookie.net/mobile-legends/images/5/5e/Zilong.png", role: ["fighter", "assassin"], damage: "physical", type: "melee", gender: "male", traits: ["mobility", "push", "burst"] },
+  { name: "Fanny", image: "https://static.wikia.nocookie.net/mobile-legends/images/e/ed/Fanny.png", role: ["assassin"], damage: "physical", type: "melee", gender: "female", traits: ["mobility", "burst", "energy"] },
+  { name: "Layla", image: "https://static.wikia.nocookie.net/mobile-legends/images/b/b5/Layla.png", role: ["marksman"], damage: "physical", type: "ranged", gender: "female", traits: ["poke", "damage", "range"] },
+  { name: "Minotaur", image: "https://static.wikia.nocookie.net/mobile-legends/images/d/df/Minotaur.png", role: ["tank", "support"], damage: "physical", type: "melee", gender: "male", traits: ["crowd control", "heal", "rage"] },
+  { name: "Lolita", image: "https://static.wikia.nocookie.net/mobile-legends/images/4/4b/Lolita.png", role: ["support", "tank"], damage: "physical", type: "melee", gender: "female", traits: ["shield", "crowd control"] },
+  { name: "Hayabusa", image: "https://static.wikia.nocookie.net/mobile-legends/images/0/06/Hayabusa.png", role: ["assassin"], damage: "physical", type: "melee", gender: "male", traits: ["mobility", "burst", "invincibility"] },
+  { name: "Gord", image: "https://static.wikia.nocookie.net/mobile-legends/images/6/62/Gord.png", role: ["mage"], damage: "magic", type: "ranged", gender: "male", traits: ["poke", "true damage", "continuous damage"] }
+];
+
+type Message = { id: number; text: string; sender: "system" | "user" | "correct" | "incorrect" };
+
+export default function GuessWhoGame() {
+  const [currentHero, setCurrentHero] = useState<Hero | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [inputValue, setInputValue] = useState("");
+  const [gameActive, setGameActive] = useState(false);
+
+  useEffect(() => {
+    startGame();
+  }, []);
+
+  const startGame = () => {
+    const randomHero = heroes[Math.floor(Math.random() * heroes.length)];
+    setCurrentHero(randomHero);
+    setGameActive(true);
+    setInputValue("");
+    setMessages([
+      { id: 1, text: "Welcome! Ask yes/no questions to guess the MLBB hero. Example: 'Is it a mage?', 'Are they melee?', 'Do they deal magic damage?'", sender: "system" }
+    ]);
+  };
+
+  const processInput = () => {
+    if (!gameActive || !currentHero) return;
+
+    const query = inputValue.trim().toLowerCase();
+    if (query === "") return;
+
+    const newMessages = [...messages, { id: Date.now(), text: inputValue, sender: "user" as const }];
+    setInputValue("");
+
+    // Guess exactly the hero name
+    if (query === currentHero.name.toLowerCase()) {
+      newMessages.push({ id: Date.now() + 1, text: `Correct! The hero is ${currentHero.name}.`, sender: "correct" as const });
+      setMessages(newMessages);
+      setGameActive(false);
+      return;
+    }
+
+    // Guessed wrong hero name
+    const isHeroGuess = heroes.some(h => h.name.toLowerCase() === query);
+    if (isHeroGuess) {
+      newMessages.push({ id: Date.now() + 1, text: "Incorrect", sender: "incorrect" as const });
+      setMessages(newMessages);
+      return;
+    }
+
+    let matched = false;
+    let result = false;
+
+    const check = (keywords: string[], condition: boolean) => {
+      if (!matched && keywords.some(k => query.includes(k))) {
+        matched = true;
+        result = condition;
+      }
+    };
+
+    check(['tank'], currentHero.role.includes('tank'));
+    check(['mage'], currentHero.role.includes('mage'));
+    check(['assassin'], currentHero.role.includes('assassin'));
+    check(['marksman', 'mm'], currentHero.role.includes('marksman'));
+    check(['support'], currentHero.role.includes('support'));
+    check(['fighter'], currentHero.role.includes('fighter'));
+
+    const hasMagic = Array.isArray(currentHero.damage) ? currentHero.damage.includes('magic') : currentHero.damage === 'magic';
+    const hasPhysical = Array.isArray(currentHero.damage) ? currentHero.damage.includes('physical') : currentHero.damage === 'physical';
+    
+    check(['magic', 'magical'], hasMagic);
+    check(['physical'], hasPhysical);
+    check(['melee', 'close combat'], currentHero.type === 'melee');
+    check(['ranged', 'range'], currentHero.type === 'ranged');
+    check(['male', 'boy', 'man', 'he', 'his'], currentHero.gender === 'male');
+    check(['female', 'girl', 'woman', 'she', 'her'], currentHero.gender === 'female');
+    
+    check(['mobility', 'dash', 'blink'], currentHero.traits.includes('mobility'));
+    check(['crowd control', 'cc', 'stun'], currentHero.traits.includes('crowd control'));
+    check(['burst'], currentHero.traits.includes('burst'));
+    check(['lifesteal', 'spell vamp', 'sustain', 'heal'], currentHero.traits.some(t => ['sustain', 'lifesteal', 'heal'].includes(t)));
+    check(['true damage'], currentHero.traits.includes('true damage'));
+
+    if (matched) {
+      newMessages.push({ id: Date.now() + 1, text: result ? "Yes" : "No", sender: "system" as const });
+    } else {
+      newMessages.push({ id: Date.now() + 1, text: "Irrelevant", sender: "system" as const });
+    }
+
+    setMessages(newMessages);
+  };
+
+  return (
+    <main className="flex items-center justify-center min-h-screen bg-slate-900 text-slate-100 p-4 font-sans">
+      <div className="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg border border-slate-700 flex flex-col overflow-hidden">
+        <div className="p-5 text-center border-b border-slate-700 relative">
+          <h1 className="m-0 mb-4 text-2xl text-yellow-600 uppercase tracking-widest">Guess The Hero</h1>
+          <button 
+            className="absolute top-5 right-5 bg-transparent text-slate-400 border border-slate-700 px-3 py-1 text-sm rounded hover:bg-slate-700 hover:text-white transition-colors"
+            onClick={startGame}
+          >
+            Restart
+          </button>
+          
+          <div className="w-32 h-32 mx-auto rounded-full border-4 border-yellow-600 overflow-hidden bg-black shadow-[0_0_15px_rgba(202,138,4,0.3)]">
+            {currentHero && (
+              <img 
+                src={currentHero.image} 
+                alt="Mystery Hero" 
+                className="w-full h-full object-cover" 
+              />
+            )}
+          </div>
+          
+          {!gameActive && currentHero && (
+             <div className="mt-4 text-xl font-bold text-yellow-600">
+               {currentHero.name}
+             </div>
+          )}
+        </div>
+
+        <div className="flex-grow h-80 p-4 overflow-y-auto flex flex-col gap-3 bg-[rgba(0,0,0,0.2)]">
+          {messages.map((msg) => {
+            let senderClasses = "";
+            if (msg.sender === "user") {
+              senderClasses = "bg-blue-500 text-white self-end rounded-br-sm";
+            } else if (msg.sender === "system") {
+              senderClasses = "bg-slate-700 text-slate-100 self-start rounded-bl-sm";
+            } else if (msg.sender === "correct") {
+              senderClasses = "bg-green-800 text-green-100 text-center self-center w-full font-bold text-lg";
+            } else if (msg.sender === "incorrect") {
+              senderClasses = "bg-red-800 text-red-100 self-start rounded-bl-sm";
+            }
+
+            return (
+              <div key={msg.id} className={`max-w-[80%] px-4 py-2 rounded-xl text-sm leading-relaxed ${senderClasses}`}>
+                {msg.text}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="flex p-4 gap-3 border-t border-slate-700 bg-slate-800">
+          <input 
+            type="text" 
+            className="flex-grow px-4 py-3 rounded-lg border border-slate-700 bg-slate-900 text-white text-base focus:outline-none focus:border-yellow-600 transition-colors"
+            placeholder="Ask a question or guess..." 
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && processInput()}
+            disabled={!gameActive}
+          />
+          <button 
+            className="px-6 py-3 rounded-lg bg-yellow-600 text-black font-bold text-base hover:bg-yellow-500 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={processInput}
+            disabled={!gameActive}
+          >
+            Send
+          </button>
+        </div>
+      </div>
+    </main>
+  );
+}
