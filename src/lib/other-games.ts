@@ -1839,112 +1839,356 @@ export const otherGames = {
   ],
   "Cookie Run: Kingdom": [
     {
-      "name": "GingerBrave",
-      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/0/05/GingerBrave_square.png"
-    },
-    {
-      "name": "Strawberry Cookie",
-      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/a/ab/Strawberry_Cookie_square.png"
-    },
-    {
-      "name": "Wizard Cookie",
-      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/9/91/Wizard_Cookie_square.png"
-    },
-    {
-      "name": "Chili Pepper Cookie",
-      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/1/14/Chili_Pepper_Cookie_square.png"
-    },
-    {
-      "name": "Custard Cookie III",
-      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/b/b3/Custard_Cookie_III_square.png"
-    },
-    {
-      "name": "Pure Vanilla Cookie",
-      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/0/09/Pure_Vanilla_Cookie_square.png"
-    },
-    {
-      "name": "Hollyberry Cookie",
-      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/f/f6/Hollyberry_Cookie_square.png"
-    },
-    {
-      "name": "Dark Cacao Cookie",
-      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/a/a9/Dark_Cacao_Cookie_square.png"
-    },
-    {
-      "name": "Golden Cheese Cookie",
-      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/4/4e/Golden_Cheese_Cookie_square.png"
-    },
-    {
-      "name": "White Lily Cookie",
-      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/8/87/White_Lily_Cookie_square.png"
-    },
-    {
-      "name": "Espresso Cookie",
-      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/f/f5/Espresso_Cookie_square.png"
-    },
-    {
-      "name": "Madeleine Cookie",
-      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/7/77/Madeleine_Cookie_square.png"
-    },
-    {
-      "name": "Latte Cookie",
-      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/1/1d/Latte_Cookie_square.png"
-    },
-    {
-      "name": "Vampire Cookie",
-      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/0/0e/Vampire_Cookie_square.png"
-    },
-    {
-      "name": "Herb Cookie",
-      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/e/ea/Herb_Cookie_square.png"
-    },
-    {
-      "name": "Dark Choco Cookie",
-      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/d/df/Dark_Choco_Cookie_square.png"
-    },
-    {
-      "name": "Sea Fairy Cookie",
-      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/6/69/Sea_Fairy_Cookie_square.png"
-    },
-    {
-      "name": "Frost Queen Cookie",
-      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/2/2f/Frost_Queen_Cookie_square.png"
-    },
-    {
-      "name": "Black Pearl Cookie",
-      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/4/44/Black_Pearl_Cookie_square.png"
-    },
-    {
-      "name": "Moonlight Cookie",
-      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/6/62/Moonlight_Cookie_square.png"
-    },
-    {
-      "name": "Red Velvet Cookie",
-      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/2/2e/Red_Velvet_Cookie_square.png"
+      "name": "Almond Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/4/4a/Almond_head.png/revision/latest?cb=20241213235055"
     },
     {
       "name": "Cotton Cookie",
-      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/5/53/Cotton_Cookie_square.png"
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/f/fe/Cotton_head.png/revision/latest?cb=20211118215348"
     },
     {
-      "name": "Caramel Arrow Cookie",
-      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/d/dd/Caramel_Arrow_Cookie_square.png"
+      "name": "Cocoa Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/1/17/Cocoa_head.png/revision/latest?cb=20211209133730"
     },
     {
-      "name": "Financier Cookie",
-      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/2/22/Financier_Cookie_square.png"
+      "name": "Affogato Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/9/99/Affogato_head.png/revision/latest?cb=20231228114103"
     },
     {
-      "name": "Sorbet Shark Cookie",
-      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/1/1c/Sorbet_Shark_Cookie_square.png"
+      "name": "Carol Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/b/b0/Carol_head.png/revision/latest?cb=20221130100816"
+    },
+    {
+      "name": "Capsaicin Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/2/21/Capsaicin_head.png/revision/latest?cb=20230330135735"
+    },
+    {
+      "name": "Beet Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/8/8a/Beet_head.png/revision/latest?cb=20230909202051"
+    },
+    {
+      "name": "Carrot Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/8/8b/Carrot_head.png/revision/latest?cb=20230909202051"
+    },
+    {
+      "name": "Adventurer Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/e/ed/Adventurer_head.png/revision/latest?cb=20230909202052"
+    },
+    {
+      "name": "Alchemist Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/7/7b/Alchemist_head.png/revision/latest?cb=20230909202053"
+    },
+    {
+      "name": "Avocado Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/f/f5/Avocado_head.png/revision/latest?cb=20230909202054"
+    },
+    {
+      "name": "Blackberry Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/6/68/Blackberry_head.png/revision/latest?cb=20241214022346"
+    },
+    {
+      "name": "Cherry Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/b/b2/Cherry_head.png/revision/latest?cb=20230909202055"
+    },
+    {
+      "name": "Angel Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/d/d7/Angel_head.png/revision/latest?cb=20230909202116"
+    },
+    {
+      "name": "Clover Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/e/e8/Clover_head.png/revision/latest?cb=20230909214702"
+    },
+    {
+      "name": "Camellia Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/0/0d/Camellia_head.png/revision/latest?cb=20241118212113"
+    },
+    {
+      "name": "Charcoal Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/c/c7/Charcoal_head.png/revision/latest?cb=20250924020914"
+    },
+    {
+      "name": "Latte Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/c/c2/Latte_head.png/revision/latest?cb=20211121072226"
+    },
+    {
+      "name": "Fig Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/f/f3/Fig_head.png/revision/latest?cb=20211121011625"
+    },
+    {
+      "name": "Hollyberry Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/a/a2/Hollyberry_head.png/revision/latest?cb=20231228102225"
+    },
+    {
+      "name": "Mango Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/9/97/Mango_head.png/revision/latest?cb=20211121015019"
+    },
+    {
+      "name": "Lilac Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/0/04/Lilac_head.png/revision/latest?cb=20231228115346"
     },
     {
       "name": "Eclair Cookie",
-      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/5/5f/Eclair_Cookie_square.png"
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/8/8a/Eclair_head.png/revision/latest?cb=20230528083015"
+    },
+    {
+      "name": "Financier Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/9/95/Financier_head.png/revision/latest?cb=20220707100824"
+    },
+    {
+      "name": "J-hope Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/7/78/J-hope_head.png/revision/latest?cb=20221013014104"
+    },
+    {
+      "name": "Jimin Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/7/7f/Jimin_head.png/revision/latest?cb=20221013014105"
+    },
+    {
+      "name": "Jin Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/5/54/Jin_head.png/revision/latest?cb=20221013014105"
+    },
+    {
+      "name": "Macaron Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/7/7d/Macaron_head.png/revision/latest?cb=20221109194337"
+    },
+    {
+      "name": "Kumiho Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/1/1f/Kumiho_head.png/revision/latest?cb=20241214021733"
+    },
+    {
+      "name": "Devil Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/d/dc/Devil_head.png/revision/latest?cb=20241214021406"
+    },
+    {
+      "name": "Gumball Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/a/aa/Gumball_head.png/revision/latest?cb=20230909202057"
+    },
+    {
+      "name": "Knight Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/0/0b/Knight_head.png/revision/latest?cb=20230909202117"
+    },
+    {
+      "name": "Fettuccine Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/c/cf/Fettuccine_head.png/revision/latest?cb=20231019165719"
+    },
+    {
+      "name": "Linzer Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/8/83/Linzer_head.png/revision/latest?cb=20231213144701"
+    },
+    {
+      "name": "Milk Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/8/8d/Milk_head.png/revision/latest?cb=20231228144938"
+    },
+    {
+      "name": "Espresso Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/7/74/Espresso_head.png/revision/latest?cb=20231228144939"
+    },
+    {
+      "name": "Herb Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/8/8a/Herb_head.png/revision/latest?cb=20231228144939"
+    },
+    {
+      "name": "Madeleine Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/2/2f/Madeleine_head.png/revision/latest?cb=20231228144939"
+    },
+    {
+      "name": "Matcha Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/7/7a/Matcha_head.png/revision/latest?cb=20240229012455"
+    },
+    {
+      "name": "Licorice Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/8/86/Licorice_head.png/revision/latest?cb=20240717215442"
+    },
+    {
+      "name": "Lemon Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/8/8d/Lemon_head.png/revision/latest?cb=20250702013037"
+    },
+    {
+      "name": "Lime Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/5/50/Lime_head.png/revision/latest?cb=20250702185033"
+    },
+    {
+      "name": "Grapefruit Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/5/53/Grapefruit_head.png/revision/latest?cb=20250702185051"
+    },
+    {
+      "name": "Manju Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/4/46/Manju_head.png/revision/latest?cb=20250730030619"
+    },
+    {
+      "name": "Jagae Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/1/1f/Jagae_head.png/revision/latest?cb=20250730030631"
+    },
+    {
+      "name": "Menthol Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/1/1c/Menthol_head.png/revision/latest?cb=20250827014228"
+    },
+    {
+      "name": "Doughael Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/e/e4/Doughael_head.png/revision/latest?cb=20250827014307"
+    },
+    {
+      "name": "Elphaba Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/1/14/Elphaba_head.png/revision/latest?cb=20251123030035"
+    },
+    {
+      "name": "Glinda Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/6/64/Glinda_head.png/revision/latest?cb=20251123030036"
+    },
+    {
+      "name": "Pastry Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/3/3f/Pastry_head.png/revision/latest?cb=20211121014703"
+    },
+    {
+      "name": "Moonlight Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/0/04/Moonlight_head.png/revision/latest?cb=20240104060510"
+    },
+    {
+      "name": "Parfait Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/5/58/Parfait_head.png/revision/latest?cb=20241214030426"
+    },
+    {
+      "name": "Raspberry Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/0/08/Raspberry_head.png/revision/latest?cb=20231228103747"
+    },
+    {
+      "name": "Oyster Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/4/48/Oyster_head.png/revision/latest?cb=20220614101305"
+    },
+    {
+      "name": "Pinecone Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/5/5b/Pinecone_head.png/revision/latest?cb=20221215095910"
+    },
+    {
+      "name": "Prophet Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/b/b6/Prophet_head.png/revision/latest?cb=20230105093300"
+    },
+    {
+      "name": "Rockstar Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/0/08/Rockstar_head.png/revision/latest?cb=20230705100045"
+    },
+    {
+      "name": "Peppermint Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/4/45/Peppermint_head.png/revision/latest?cb=20230809102053"
+    },
+    {
+      "name": "Muscle Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/b/b0/Muscle_head.png/revision/latest?cb=20230909202058"
+    },
+    {
+      "name": "Onion Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/a/a3/Onion_head.png/revision/latest?cb=20241214023038"
+    },
+    {
+      "name": "Ninja Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/2/2f/Ninja_head.png/revision/latest?cb=20230909202118"
+    },
+    {
+      "name": "Princess Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/8/83/Princess_head.png/revision/latest?cb=20230909202118"
+    },
+    {
+      "name": "Pancake Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/1/1f/Pancake_head.png/revision/latest?cb=20230909214704"
+    },
+    {
+      "name": "Mozzarella Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/1/1c/Mozzarella_head.png/revision/latest?cb=20231103144344"
+    },
+    {
+      "name": "Olive Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/9/9d/Olive_head.png/revision/latest?cb=20231103144817"
+    },
+    {
+      "name": "Rye Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/3/36/Rye_head.png/revision/latest?cb=20231228144939"
+    },
+    {
+      "name": "Rebel Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/8/8f/Rebel_head.png/revision/latest?cb=20240104091647"
+    },
+    {
+      "name": "Pomegranate Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/2/27/Pomegranate_head.png/revision/latest?cb=20240724032144"
+    },
+    {
+      "name": "Schwarzwälder Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/5/50/Schwarzwalder_head.png/revision/latest?cb=20231228104134"
+    },
+    {
+      "name": "Okchun Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/3/39/Okchun_head.png/revision/latest?cb=20241231040647"
+    },
+    {
+      "name": "Pavlova Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/4/4f/Pavlova_head.png/revision/latest?cb=20250507011817"
+    },
+    {
+      "name": "Orange Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/f/f8/Orange_head.png/revision/latest?cb=20250702030115"
+    },
+    {
+      "name": "Seltzer Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/c/cf/Seltzer_head.png/revision/latest?cb=20250827013916"
+    },
+    {
+      "name": "Tails Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/f/fc/Tails_head.png/revision/latest?cb=20211121030516"
+    },
+    {
+      "name": "Sonic Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/9/9e/Sonic_head.png/revision/latest?cb=20211121030759"
     },
     {
       "name": "Wildberry Cookie",
-      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/5/58/Wildberry_Cookie_square.png"
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/8/8f/Wildberry_head.png/revision/latest?cb=20231228130109"
+    },
+    {
+      "name": "V Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/3/3f/V_head.png/revision/latest?cb=20221013014105"
+    },
+    {
+      "name": "Sherbet Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/f/fc/Sherbet_head.png/revision/latest?cb=20221130100719"
+    },
+    {
+      "name": "Stardust Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/1/15/Stardust_head.png/revision/latest?cb=20230309131650"
+    },
+    {
+      "name": "Snapdragon Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/3/3b/Snapdragon_head.png/revision/latest?cb=20230608130745"
+    },
+    {
+      "name": "Vampire Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/7/78/Vampire_head.png/revision/latest?cb=20230909202114"
+    },
+    {
+      "name": "Werewolf Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/6/69/Werewolf_head.png/revision/latest?cb=20241214022556"
+    },
+    {
+      "name": "Wizard Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/3/3c/Wizard_head.png/revision/latest?cb=20241214021933"
+    },
+    {
+      "name": "Strawberry Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/7/77/Strawberry_head.png/revision/latest?cb=20241214020641"
+    },
+    {
+      "name": "Sparkling Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/b/b5/Sparkling_head.png/revision/latest?cb=20231228145201"
+    },
+    {
+      "name": "Silverbell Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/2/25/Silverbell_head.png/revision/latest?cb=20240119034300"
+    },
+    {
+      "name": "Stormbringer Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/7/77/Stormbringer_head.png/revision/latest?cb=20240424214957"
+    },
+    {
+      "name": "Sugarfly Cookie",
+      "image": "https://static.wikia.nocookie.net/cookierunkingdom/images/9/92/Sugarfly_head.png/revision/latest?cb=20250604014948"
     }
   ]
 };
