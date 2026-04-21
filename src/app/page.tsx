@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 type Hero = {
   name: string;
   image: string;
@@ -513,6 +513,12 @@ type Message = { id: number; text: string; sender: "system" | "user" | "correct"
 
 export default function GuessWhoGame() {
   const [selected, setSelected] = useState<string[]>([]);
+  const [displayedHeroes, setDisplayedHeroes] = useState<Hero[]>([]);
+
+  useEffect(() => {
+    const shuffled = [...heroes].sort(() => 0.5 - Math.random());
+    setDisplayedHeroes(shuffled.slice(0, 50));
+  }, []);
 
   const toggleSelection = (name: string) => {
     if (selected.includes(name)) {
@@ -527,16 +533,28 @@ export default function GuessWhoGame() {
       <div className="max-w-6xl mx-auto flex flex-col items-center">
         <div className="w-full flex justify-between items-center mb-8 pb-4 border-b border-slate-800">
           <h1 className="text-3xl text-yellow-600 uppercase tracking-widest font-bold m-0 drop-shadow-md">Guess The Hero</h1>
-          <button 
-            className="bg-slate-800 hover:bg-slate-700 text-white px-6 py-2 rounded-lg border border-slate-600 transition-colors shadow-sm font-semibold"
-            onClick={() => setSelected([])}
-          >
-            Reset
-          </button>
+          <div className="flex gap-3">
+            <button 
+              className="bg-slate-800 hover:bg-slate-700 text-white px-6 py-2 rounded-lg border border-slate-600 transition-colors shadow-sm font-semibold"
+              onClick={() => setSelected([])}
+            >
+              Reset Clicks
+            </button>
+            <button 
+              className="bg-yellow-600 hover:bg-yellow-500 text-black px-6 py-2 rounded-lg border border-yellow-500 transition-colors shadow-sm font-bold"
+              onClick={() => {
+                setSelected([]);
+                const shuffled = [...heroes].sort(() => 0.5 - Math.random());
+                setDisplayedHeroes(shuffled.slice(0, 50));
+              }}
+            >
+              Shuffle Heroes
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-4 w-full">
-          {heroes.map((hero) => {
+          {displayedHeroes.map((hero) => {
             const isSelected = selected.includes(hero.name);
             return (
               <div 
