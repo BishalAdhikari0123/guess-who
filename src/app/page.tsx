@@ -529,57 +529,79 @@ export default function GuessWhoGame() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100 p-8 font-sans">
-      <div className="max-w-6xl mx-auto flex flex-col items-center">
-        <div className="w-full flex justify-between items-center mb-8 pb-4 border-b border-slate-800">
-          <h1 className="text-3xl text-yellow-600 uppercase tracking-widest font-bold m-0 drop-shadow-md">Guess The Hero</h1>
-          <div className="flex gap-3">
+    <main className="min-h-screen relative bg-[#0a0a14] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-950 via-slate-950 to-black text-slate-100 font-sans selection:bg-yellow-500/30">
+      
+      {/* Dynamic Grid Background Overlay */}
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+CjxwYXRoIGQ9Ik0wIDBoNDB2NDBIMHoiIGZpbGw9Im5vbmUiLz4KPHBhdGggZD0iTTAgMGgwLjV2NDBIMHptNDAgMGgtMC41djQwSDQweiIgZmlsbD0icmdiYSgyNTUsIDI1NSwgMjU1LCAwLjA0KSIvPgo8cGF0aCBkPSJNMCAwaDQwdjAuNUgwek0wIDQwaDQwdi0wLjVIMHoiIGZpbGw9InJnYmEoMjU1LCAyNTUsIDI1NSwgMC4wNCkiLz4KPC9zdmc+')] opacity-20 pointer-events-none mix-blend-screen" />
+
+      {/* Sticky Header with Glassmorphism */}
+      <div className="sticky top-0 z-50 backdrop-blur-xl bg-black/40 border-b border-white/10 shadow-2xl mb-12">
+        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-6">
+          <div className="text-center sm:text-left">
+            <h1 className="text-3xl sm:text-5xl font-black uppercase tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-yellow-500 to-amber-700 drop-shadow-[0_0_20px_rgba(234,179,8,0.4)] m-0">
+              Guess The Hero
+            </h1>
+            <p className="text-amber-500/80 text-xs sm:text-sm mt-2 font-bold tracking-[0.3em] uppercase drop-shadow-md text-glow">Eliminate the board</p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-4">
             <button 
-              className="bg-slate-800 hover:bg-slate-700 text-white px-6 py-2 rounded-lg border border-slate-600 transition-colors shadow-sm font-semibold"
+              className="px-6 py-3 rounded-lg border border-slate-700/80 bg-slate-800/80 hover:bg-slate-700 text-white transition-all hover:-translate-y-0.5 shadow-lg hover:shadow-slate-700/50 font-bold tracking-wider text-xs uppercase backdrop-blur-sm active:scale-95 focus:outline-none focus:ring-2 focus:ring-slate-500/50"
               onClick={() => setSelected([])}
             >
               Reset Clicks
             </button>
             <button 
-              className="bg-yellow-600 hover:bg-yellow-500 text-black px-6 py-2 rounded-lg border border-yellow-500 transition-colors shadow-sm font-bold"
+              className="px-6 py-3 rounded-lg border border-yellow-500/50 bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-500 hover:to-amber-500 text-black transition-all hover:-translate-y-0.5 shadow-[0_0_25px_rgba(217,119,6,0.3)] hover:shadow-[0_0_35px_rgba(217,119,6,0.6)] font-extrabold tracking-wider text-xs uppercase active:scale-95 focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
               onClick={() => {
                 setSelected([]);
-                const shuffled = [...heroes].sort(() => 0.5 - Math.random());
-                setDisplayedHeroes(shuffled.slice(0, 50));
+                setDisplayedHeroes([...heroes].sort(() => 0.5 - Math.random()).slice(0, 50));
               }}
             >
-              Shuffle Heroes
+              Shuffle Board
             </button>
           </div>
         </div>
+      </div>
 
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-4 w-full">
+      {/* Main Grid */}
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pb-20 flex flex-col items-center relative z-10">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-10 gap-3 sm:gap-4 w-full">
           {displayedHeroes.map((hero) => {
             const isSelected = selected.includes(hero.name);
             return (
               <div 
                 key={hero.name}
                 onClick={() => toggleSelection(hero.name)}
-                className={`relative cursor-pointer transition-all duration-300 rounded-xl overflow-hidden border-4 ${
+                className={`group relative cursor-pointer transition-all duration-500 rounded-lg overflow-hidden shadow-xl aspect-[3/4] flex flex-col bg-slate-900 ${
                   isSelected 
-                    ? "border-red-900 opacity-25 grayscale scale-95" 
-                    : "border-slate-800 hover:border-yellow-600 shadow-md hover:-translate-y-1 hover:shadow-yellow-600/20"
+                    ? "opacity-30 grayscale-[1] scale-[0.95] border border-red-900/40" 
+                    : "hover:-translate-y-2 hover:shadow-[0_10px_30px_rgba(234,179,8,0.3)] border border-slate-700 hover:border-yellow-500/80"
                 }`}
               >
-                <div className="aspect-square bg-slate-900">
+                {/* Image Section */}
+                <div className="absolute inset-0 w-full h-full bg-black">
                   <img 
                     src={hero.image} 
                     alt={hero.name} 
-                    className="w-full h-full object-cover"
+                    className={`w-full h-full object-cover transition-all duration-700 ${!isSelected ? "group-hover:scale-[1.2] group-hover:brightness-125" : ""}`}
                     loading="lazy"
                   />
+                  {/* Subtle vignette gradient for text readability */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/100 via-black/40 to-transparent pointer-events-none opacity-80" />
+                  <div className="absolute inset-x-0 bottom-0 pb-3 pt-6 px-1 text-center pointer-events-none">
+                    <span className="font-bold text-[11px] sm:text-[12px] tracking-widest text-slate-100 uppercase drop-shadow-[0_3px_5px_rgba(0,0,0,1)] break-words">
+                      {hero.name}
+                    </span>
+                  </div>
                 </div>
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent pt-6 pb-2 px-2 text-center">
-                  <span className="font-bold text-sm tracking-wide capitalize drop-shadow-md">{hero.name}</span>
-                </div>
+
+                {/* Red X Cross Out Overlay */}
                 {isSelected && (
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <span className="text-red-600 text-7xl font-black drop-shadow-[0_2px_4px_rgba(0,0,0,1)] opacity-90 scale-125">X</span>
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                    <div className="relative flex items-center justify-center w-full h-full">
+                      <div className="absolute w-[150%] h-3 bg-red-600 rotate-[55deg] shadow-[0_0_25px_rgba(220,38,38,1)] saturate-200 blur-[0.5px]"></div>
+                      <div className="absolute w-[150%] h-3 bg-red-600 -rotate-[55deg] shadow-[0_0_25px_rgba(220,38,38,1)] saturate-200 blur-[0.5px]"></div>
+                    </div>
                   </div>
                 )}
               </div>
