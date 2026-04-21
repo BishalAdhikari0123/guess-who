@@ -514,11 +514,12 @@ type Message = { id: number; text: string; sender: "system" | "user" | "correct"
 export default function GuessWhoGame() {
   const [selected, setSelected] = useState<string[]>([]);
   const [displayedHeroes, setDisplayedHeroes] = useState<Hero[]>([]);
+  const [heroCount, setHeroCount] = useState<number | 'all'>(50);
 
   useEffect(() => {
     const shuffled = [...heroes].sort(() => 0.5 - Math.random());
-    setDisplayedHeroes(shuffled.slice(0, 50));
-  }, []);
+    setDisplayedHeroes(heroCount === 'all' ? shuffled : shuffled.slice(0, heroCount));
+  }, [heroCount]);
 
   const toggleSelection = (name: string) => {
     if (selected.includes(name)) {
@@ -544,6 +545,21 @@ export default function GuessWhoGame() {
             <p className="text-amber-500/80 text-xs sm:text-sm mt-2 font-bold tracking-[0.3em] uppercase drop-shadow-md text-glow">Eliminate the board</p>
           </div>
           <div className="flex flex-wrap justify-center gap-4">
+            <select
+              title="Select Hero Count"
+              className="px-4 py-3 rounded-lg border border-slate-700/80 bg-slate-900 text-white font-bold tracking-wider text-xs uppercase focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
+              value={heroCount}
+              onChange={(e) => {
+                const val = e.target.value;
+                setHeroCount(val === 'all' ? 'all' : Number(val));
+                setSelected([]);
+              }}
+            >
+              <option value={25}>25 Heroes</option>
+              <option value={50}>50 Heroes</option>
+              <option value={75}>75 Heroes</option>
+              <option value="all">All Heroes</option>
+            </select>
             <button 
               className="px-6 py-3 rounded-lg border border-slate-700/80 bg-slate-800/80 hover:bg-slate-700 text-white transition-all hover:-translate-y-0.5 shadow-lg hover:shadow-slate-700/50 font-bold tracking-wider text-xs uppercase backdrop-blur-sm active:scale-95 focus:outline-none focus:ring-2 focus:ring-slate-500/50"
               onClick={() => setSelected([])}
@@ -554,7 +570,7 @@ export default function GuessWhoGame() {
               className="px-6 py-3 rounded-lg border border-yellow-500/50 bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-500 hover:to-amber-500 text-black transition-all hover:-translate-y-0.5 shadow-[0_0_25px_rgba(217,119,6,0.3)] hover:shadow-[0_0_35px_rgba(217,119,6,0.6)] font-extrabold tracking-wider text-xs uppercase active:scale-95 focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
               onClick={() => {
                 setSelected([]);
-                setDisplayedHeroes([...heroes].sort(() => 0.5 - Math.random()).slice(0, 50));
+                setDisplayedHeroes([...heroes].sort(() => 0.5 - Math.random()).slice(0, heroCount === 'all' ? heroes.length : heroCount));
               }}
             >
               Shuffle Board
