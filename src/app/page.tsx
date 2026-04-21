@@ -1,6 +1,8 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
+import { otherGames } from "../lib/other-games";
+
 type Hero = {
   name: string;
   image: string;
@@ -515,10 +517,16 @@ export default function GuessWhoGame() {
   const [selected, setSelected] = useState<string[]>([]);
   const [displayedHeroes, setDisplayedHeroes] = useState<Hero[]>([]);
   const [heroCount, setHeroCount] = useState<number | 'all'>(50);
+  const [gameMode, setGameMode] = useState<string>("Mobile Legends");
 
   useEffect(() => {
-    setDisplayedHeroes(heroCount === 'all' ? heroes : heroes.slice(0, heroCount));
-  }, [heroCount]);
+    let currentRoster = heroes;
+    if (gameMode !== "Mobile Legends") {
+      currentRoster = (otherGames as any)[gameMode] || [];
+    }
+    setDisplayedHeroes(heroCount === 'all' ? currentRoster : currentRoster.slice(0, heroCount));
+    setSelected([]);
+  }, [heroCount, gameMode]);
 
   const toggleSelection = (name: string) => {
     if (selected.includes(name)) {
@@ -544,6 +552,17 @@ export default function GuessWhoGame() {
             <p className="text-amber-500/80 text-xs sm:text-sm mt-2 font-bold tracking-[0.3em] uppercase drop-shadow-md text-glow">Eliminate the board</p>
           </div>
           <div className="flex flex-wrap justify-center gap-4">
+            <select
+              title="Select Game Mode"
+              className="px-4 py-3 rounded-lg border border-slate-700/80 bg-slate-900 text-white font-bold tracking-wider text-xs uppercase focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
+              value={gameMode}
+              onChange={(e) => setGameMode(e.target.value)}
+            >
+              <option value="Mobile Legends">Mobile Legends</option>
+              {Object.keys(otherGames).map(game => (
+                <option key={game} value={game}>{game}</option>
+              ))}
+            </select>
             <select
               title="Select Hero Count"
               className="px-4 py-3 rounded-lg border border-slate-700/80 bg-slate-900 text-white font-bold tracking-wider text-xs uppercase focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
