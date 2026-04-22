@@ -519,7 +519,9 @@ type NetMessage =
   | { type: "guess"; name: string }
   | { type: "guessResult"; name: string; correct: boolean }
   | { type: "nextRound" }
-  | { type: "resetMatch" };
+  | { type: "resetMatch" }
+  | { type: "ping"; at: number }
+  | { type: "pong"; at: number };
 
 export default function GuessWhoGame() {
   const [selected, setSelected] = useState<string[]>([]);
@@ -542,12 +544,18 @@ export default function GuessWhoGame() {
   const [connectionStatus, setConnectionStatus] = useState<
     "offline" | "waiting-offer" | "waiting-answer" | "connected"
   >("offline");
+  const [rtcState, setRtcState] = useState<string>("new");
+  const [channelState, setChannelState] = useState<string>("closed");
+  const [peerLive, setPeerLive] = useState(false);
+  const [latencyMs, setLatencyMs] = useState<number | null>(null);
+  const [lastSeenAt, setLastSeenAt] = useState<number | null>(null);
   const [localSignal, setLocalSignal] = useState("");
   const [remoteSignal, setRemoteSignal] = useState("");
 
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const dcRef = useRef<RTCDataChannel | null>(null);
   const autoGuessRoundRef = useRef<number>(-1);
+  const heartbeatTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const winsNeeded = matchFormat === "bo3" ? 2 : 3;
 
@@ -583,10 +591,78 @@ export default function GuessWhoGame() {
     }
   }, [onlineMode, connectionStatus, myReady, opponentReady, roundWinner, matchWinner, selected, displayedHeroes, roundNumber]);
 
+  useEffect(() => {
+    if (!onlineMode || connectionStatus !== "connected") {
+      if (heartbeatTimerRef.current) {
+        clearInterval(heartbeatTimerRef.current);
+        heartbeatTimerRef.current = null;
+      }
+      setPeerLive(false);
+      setLatencyMs(null);
+      return;
+    }
+
+    if (heartbeatTimerRef.current) clearInterval(heartbeatTimerRef.current);
+    heartbeatTimerRef.current = setInterval(() => {
+      sendMessage({ type: "ping", at: Date.now() });
+    }, 3000);
+
+    return () => {
+      if (heartbeatTimerRef.current) {
+        clearInterval(heartbeatTimerRef.current);
+        heartbeatTimerRef.current = null;
+      }
+    };
+  }, [onlineMode, connectionStatus]);
+
+  useEffect(() => {
+    if (!lastSeenAt) return;
+    const watcher = setInterval(() => {
+      if (Date.now() - lastSeenAt > 10000) {
+        setPeerLive(false);
+      }
+    }, 1500);
+    return () => clearInterval(watcher);
+  }, [lastSeenAt]);
+
+  const teardownConnection = () => {
+    if (heartbeatTimerRef.current) {
+      clearInterval(heartbeatTimerRef.current);
+      heartbeatTimerRef.current = null;
+    }
+
+    if (dcRef.current) {
+      dcRef.current.close();
+      dcRef.current = null;
+    }
+
+    if (pcRef.current) {
+      pcRef.current.close();
+      pcRef.current = null;
+    }
+
+    setConnectionStatus("offline");
+    setRtcState("new");
+    setChannelState("closed");
+    setPeerLive(false);
+    setLatencyMs(null);
+    setLastSeenAt(null);
+    setOpponentReady(false);
+  };
+
   const attachDataChannel = (dc: RTCDataChannel) => {
     dcRef.current = dc;
-    dc.onopen = () => setConnectionStatus("connected");
-    dc.onclose = () => setConnectionStatus("offline");
+    setChannelState(dc.readyState);
+    dc.onopen = () => {
+      setConnectionStatus("connected");
+      setChannelState("open");
+      sendMessage({ type: "ping", at: Date.now() });
+    };
+    dc.onclose = () => {
+      setConnectionStatus("offline");
+      setChannelState("closed");
+      setPeerLive(false);
+    };
     dc.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data) as NetMessage;
@@ -598,11 +674,7 @@ export default function GuessWhoGame() {
   };
 
   const createPeer = (host: boolean) => {
-    if (pcRef.current) {
-      pcRef.current.close();
-      pcRef.current = null;
-      dcRef.current = null;
-    }
+    teardownConnection();
 
     const pc = new RTCPeerConnection({
       iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
@@ -615,11 +687,13 @@ export default function GuessWhoGame() {
     };
 
     pc.onconnectionstatechange = () => {
+      setRtcState(pc.connectionState);
       if (pc.connectionState === "connected") {
         setConnectionStatus("connected");
       }
       if (pc.connectionState === "failed" || pc.connectionState === "disconnected" || pc.connectionState === "closed") {
         setConnectionStatus("offline");
+        setPeerLive(false);
       }
     };
 
@@ -639,6 +713,11 @@ export default function GuessWhoGame() {
     if (dcRef.current && dcRef.current.readyState === "open") {
       dcRef.current.send(JSON.stringify(message));
     }
+  };
+
+  const copyLocalSignal = async () => {
+    if (!localSignal) return;
+    await navigator.clipboard.writeText(localSignal);
   };
 
   const concludeRound = (winner: "me" | "opponent") => {
@@ -710,6 +789,16 @@ export default function GuessWhoGame() {
       case "resetMatch":
         resetMatch(false);
         break;
+      case "ping":
+        setPeerLive(true);
+        setLastSeenAt(Date.now());
+        sendMessage({ type: "pong", at: msg.at });
+        break;
+      case "pong":
+        setPeerLive(true);
+        setLastSeenAt(Date.now());
+        setLatencyMs(Math.max(0, Date.now() - msg.at));
+        break;
       default:
         break;
     }
@@ -733,6 +822,24 @@ export default function GuessWhoGame() {
     if (!pcRef.current) return;
     const answer = JSON.parse(remoteSignal);
     await pcRef.current.setRemoteDescription(new RTCSessionDescription(answer));
+  };
+
+  const connectUsingSignal = async () => {
+    if (!remoteSignal.trim()) return;
+    const desc = JSON.parse(remoteSignal);
+
+    if (desc.type === "offer") {
+      const pc = createPeer(false);
+      await pc.setRemoteDescription(new RTCSessionDescription(desc));
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      return;
+    }
+
+    if (desc.type === "answer") {
+      if (!pcRef.current) return;
+      await pcRef.current.setRemoteDescription(new RTCSessionDescription(desc));
+    }
   };
 
   const toggleSelection = (name: string) => {
@@ -773,10 +880,13 @@ export default function GuessWhoGame() {
             <button
               className={`px-4 py-3 rounded-lg border font-bold tracking-wider text-xs uppercase transition-all ${onlineMode ? "border-emerald-500 bg-emerald-600 text-black" : "border-slate-700/80 bg-slate-900 text-white"}`}
               onClick={() => {
-                setOnlineMode((v) => !v);
-                setConnectionStatus("offline");
-                setRemoteSignal("");
-                setLocalSignal("");
+                const next = !onlineMode;
+                setOnlineMode(next);
+                if (!next) {
+                  teardownConnection();
+                  setRemoteSignal("");
+                  setLocalSignal("");
+                }
               }}
             >
               {onlineMode ? "Online Mode On" : "Online Mode Off"}
@@ -821,7 +931,12 @@ export default function GuessWhoGame() {
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pb-6 relative z-10">
           <div className="rounded-xl border border-slate-700/80 bg-slate-900/70 p-4 md:p-6 space-y-4">
             <div className="flex flex-wrap gap-3 items-center justify-between">
-              <div className="text-xs uppercase tracking-widest text-amber-300">Status: {connectionStatus}</div>
+              <div className="flex items-center gap-3">
+                <div className="text-xs uppercase tracking-widest text-amber-300">Status: {connectionStatus}</div>
+                <div className={`h-2.5 w-2.5 rounded-full ${peerLive ? "bg-emerald-400 animate-pulse" : "bg-red-400"}`} />
+                <div className="text-[11px] text-slate-300 uppercase tracking-wider">Peer {peerLive ? "Live" : "Not Live"}</div>
+                {latencyMs !== null && <div className="text-[11px] text-slate-300 uppercase tracking-wider">Ping {latencyMs}ms</div>}
+              </div>
               <div className="flex items-center gap-2">
                 <label className="text-xs uppercase tracking-widest text-slate-300">Format</label>
                 <select
@@ -843,6 +958,13 @@ export default function GuessWhoGame() {
               <button className="px-3 py-2 rounded border border-slate-700 bg-slate-800 text-xs uppercase" onClick={createOffer}>Create Offer (Host)</button>
               <button className="px-3 py-2 rounded border border-slate-700 bg-slate-800 text-xs uppercase" onClick={acceptOfferAndCreateAnswer}>Accept Offer (Join)</button>
               <button className="px-3 py-2 rounded border border-slate-700 bg-slate-800 text-xs uppercase" onClick={connectWithAnswer}>Connect With Answer</button>
+              <button className="px-3 py-2 rounded border border-indigo-600 bg-indigo-600/20 text-xs uppercase" onClick={connectUsingSignal}>Connect Using Remote Signal</button>
+              <button className="px-3 py-2 rounded border border-slate-700 bg-slate-800 text-xs uppercase" onClick={copyLocalSignal}>Copy Local Signal</button>
+              <button className="px-3 py-2 rounded border border-rose-600 bg-rose-600/20 text-xs uppercase" onClick={teardownConnection}>Disconnect</button>
+            </div>
+
+            <div className="text-[11px] text-slate-400 uppercase tracking-wider">
+              RTC: {rtcState} | Data channel: {channelState}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
