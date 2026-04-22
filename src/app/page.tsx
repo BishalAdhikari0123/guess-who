@@ -547,7 +547,7 @@ export default function GuessWhoGame() {
         <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-6">
           <div className="text-center sm:text-left">
             <h1 className="text-3xl sm:text-5xl font-black uppercase tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-yellow-500 to-amber-700 drop-shadow-[0_0_20px_rgba(234,179,8,0.4)] m-0">
-              Guess The Hero
+              Guess The Character
             </h1>
             <p className="text-amber-500/80 text-xs sm:text-sm mt-2 font-bold tracking-[0.3em] uppercase drop-shadow-md text-glow">Eliminate the board</p>
           </div>
@@ -609,6 +609,9 @@ export default function GuessWhoGame() {
                     src={hero.image} 
                     alt={hero.name} 
                     className={`w-full h-full object-cover transition-all duration-700 ${!isSelected ? "group-hover:scale-[1.2] group-hover:brightness-125" : ""}`}
+                    onError={(e) => {
+                      e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(hero.name)}&background=1e293b&color=f8fafc&size=256`;
+                    }}
                     loading="lazy"
                   />
                   {/* Subtle vignette gradient for text readability */}

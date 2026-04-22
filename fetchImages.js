@@ -58,45 +58,51 @@ async function main() {
   // Dota 2
   try {
     const dotaResponse = await fetchJson('https://api.opendota.com/api/heroStats');
-    games['Dota 2'] = dotaResponse.map(h => ({
+    games['Dota 2'] = dotaResponse.filter(h => h.img).map(h => ({
       name: h.localized_name,
-      image: `https://api.opendota.com${h.icon}`
+      image: `https://cdn.cloudflare.steamstatic.com${h.img.replace(/\?$/, '')}`
     }));
   } catch(e) { console.error('Dota error', e); }
 
 
   // Cookie Run: Kingdom
   try {
-    const cookies = [
-      { name: 'GingerBrave', image: 'https://static.wikia.nocookie.net/cookierunkingdom/images/0/05/GingerBrave_square.png' },
-      { name: 'Strawberry Cookie', image: 'https://static.wikia.nocookie.net/cookierunkingdom/images/a/ab/Strawberry_Cookie_square.png' },
-      { name: 'Wizard Cookie', image: 'https://static.wikia.nocookie.net/cookierunkingdom/images/9/91/Wizard_Cookie_square.png' },
-      { name: 'Chili Pepper Cookie', image: 'https://static.wikia.nocookie.net/cookierunkingdom/images/1/14/Chili_Pepper_Cookie_square.png' },
-      { name: 'Custard Cookie III', image: 'https://static.wikia.nocookie.net/cookierunkingdom/images/b/b3/Custard_Cookie_III_square.png' },
-      { name: 'Pure Vanilla Cookie', image: 'https://static.wikia.nocookie.net/cookierunkingdom/images/0/09/Pure_Vanilla_Cookie_square.png' },
-      { name: 'Hollyberry Cookie', image: 'https://static.wikia.nocookie.net/cookierunkingdom/images/f/f6/Hollyberry_Cookie_square.png' },
-      { name: 'Dark Cacao Cookie', image: 'https://static.wikia.nocookie.net/cookierunkingdom/images/a/a9/Dark_Cacao_Cookie_square.png' },
-      { name: 'Golden Cheese Cookie', image: 'https://static.wikia.nocookie.net/cookierunkingdom/images/4/4e/Golden_Cheese_Cookie_square.png' },
-      { name: 'White Lily Cookie', image: 'https://static.wikia.nocookie.net/cookierunkingdom/images/8/87/White_Lily_Cookie_square.png' },
-      { name: 'Espresso Cookie', image: 'https://static.wikia.nocookie.net/cookierunkingdom/images/f/f5/Espresso_Cookie_square.png' },
-      { name: 'Madeleine Cookie', image: 'https://static.wikia.nocookie.net/cookierunkingdom/images/7/77/Madeleine_Cookie_square.png' },
-      { name: 'Latte Cookie', image: 'https://static.wikia.nocookie.net/cookierunkingdom/images/1/1d/Latte_Cookie_square.png' },
-      { name: 'Vampire Cookie', image: 'https://static.wikia.nocookie.net/cookierunkingdom/images/0/0e/Vampire_Cookie_square.png' },
-      { name: 'Herb Cookie', image: 'https://static.wikia.nocookie.net/cookierunkingdom/images/e/ea/Herb_Cookie_square.png' },
-      { name: 'Dark Choco Cookie', image: 'https://static.wikia.nocookie.net/cookierunkingdom/images/d/df/Dark_Choco_Cookie_square.png' },
-      { name: 'Sea Fairy Cookie', image: 'https://static.wikia.nocookie.net/cookierunkingdom/images/6/69/Sea_Fairy_Cookie_square.png' },
-      { name: 'Frost Queen Cookie', image: 'https://static.wikia.nocookie.net/cookierunkingdom/images/2/2f/Frost_Queen_Cookie_square.png' },
-      { name: 'Black Pearl Cookie', image: 'https://static.wikia.nocookie.net/cookierunkingdom/images/4/44/Black_Pearl_Cookie_square.png' },
-      { name: 'Moonlight Cookie', image: 'https://static.wikia.nocookie.net/cookierunkingdom/images/6/62/Moonlight_Cookie_square.png' },
-      { name: 'Red Velvet Cookie', image: 'https://static.wikia.nocookie.net/cookierunkingdom/images/2/2e/Red_Velvet_Cookie_square.png' },
-      { name: 'Cotton Cookie', image: 'https://static.wikia.nocookie.net/cookierunkingdom/images/5/53/Cotton_Cookie_square.png' },
-      { name: 'Caramel Arrow Cookie', image: 'https://static.wikia.nocookie.net/cookierunkingdom/images/d/dd/Caramel_Arrow_Cookie_square.png' },
-      { name: 'Financier Cookie', image: 'https://static.wikia.nocookie.net/cookierunkingdom/images/2/22/Financier_Cookie_square.png' },
-      { name: 'Sorbet Shark Cookie', image: 'https://static.wikia.nocookie.net/cookierunkingdom/images/1/1c/Sorbet_Shark_Cookie_square.png' },
-      { name: 'Eclair Cookie', image: 'https://static.wikia.nocookie.net/cookierunkingdom/images/5/5f/Eclair_Cookie_square.png' },
-      { name: 'Wildberry Cookie', image: 'https://static.wikia.nocookie.net/cookierunkingdom/images/5/58/Wildberry_Cookie_square.png' }
-    ];
-    games['Cookie Run: Kingdom'] = cookies;
+    const listUrl = 'https://cookierunkingdom.fandom.com/api.php?action=query&list=categorymembers&cmtitle=Category:Playable_Cookies&cmlimit=500&format=json';
+    const listData = await fetchJson(listUrl);
+    const cookies = listData.query.categorymembers || [];
+
+    const crkRoster = [];
+    const chunkSize = 50;
+
+    for (let i = 0; i < cookies.length; i += chunkSize) {
+      const chunk = cookies.slice(i, i + chunkSize);
+      const fileTitles = chunk.map((c) => {
+        const cleanName = c.title.endsWith(' Cookie') ? c.title.replace(' Cookie', '') : c.title;
+        return `File:${cleanName} head.png`;
+      });
+
+      const imgUrl = `https://cookierunkingdom.fandom.com/api.php?action=query&prop=imageinfo&titles=${encodeURIComponent(fileTitles.join('|'))}&iiprop=url&format=json`;
+      const imgData = await fetchJson(imgUrl);
+
+      if (imgData.query && imgData.query.pages) {
+        for (const pageObj of Object.values(imgData.query.pages)) {
+          if (pageObj.imageinfo && pageObj.imageinfo[0] && pageObj.imageinfo[0].url) {
+            const fileTitle = pageObj.title || '';
+            const rawName = fileTitle.replace('File:', '').replace(' head.png', '').trim();
+            const cookieName = rawName.toLowerCase() !== 'gingerbrave' && !rawName.toLowerCase().includes('cookie')
+              ? `${rawName} Cookie`
+              : rawName;
+
+            crkRoster.push({
+              name: cookieName,
+              image: pageObj.imageinfo[0].url,
+            });
+          }
+        }
+      }
+    }
+
+    games['Cookie Run: Kingdom'] = crkRoster;
   } catch(e) { console.error('CRK error', e); }
 
   let out = `export const otherGames = ${JSON.stringify(games, null, 2)};\n`;
