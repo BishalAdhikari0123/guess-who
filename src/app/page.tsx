@@ -5,6 +5,7 @@ import type { DataConnection } from "peerjs";
 import { otherGames } from "../lib/other-games";
 import { animeCollections } from "../lib/anime-characters";
 import { manhwaCollections } from "../lib/manhwa-characters";
+import { tvCollections } from "../lib/tv-characters";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import SimpleStatusChip from "@/components/game/SimpleStatusChip";
@@ -520,7 +521,7 @@ const characters: Character[] = [
 ];
 
 type MatchFormat = "bo3" | "bo5";
-type MajorMode = "games" | "manhwa" | "anime";
+type MajorMode = "games" | "manhwa" | "anime" | "tv";
 type ScreenMode = "dashboard" | "game";
 
 type NetMessage =
@@ -538,7 +539,15 @@ export default function GuessWhoGame() {
   const pathname = usePathname();
   const router = useRouter();
   const routeMajorMode: MajorMode | null =
-    pathname === "/anime" ? "anime" : pathname === "/manhwa" ? "manhwa" : pathname === "/games" ? "games" : null;
+    pathname === "/anime"
+      ? "anime"
+      : pathname === "/manhwa"
+      ? "manhwa"
+      : pathname === "/games"
+      ? "games"
+      : pathname === "/tv"
+      ? "tv"
+      : null;
   const isModeRoute = routeMajorMode !== null;
 
   const [selected, setSelected] = useState<string[]>([]);
@@ -595,6 +604,7 @@ export default function GuessWhoGame() {
       games: gameCollections,
       manhwa: manhwaCollections as Record<string, Character[]>,
       anime: animeCollections as Record<string, Character[]>,
+      tv: tvCollections as Record<string, Character[]>,
     }),
     [gameCollections]
   );
@@ -607,6 +617,7 @@ export default function GuessWhoGame() {
       games: "/games",
       anime: "/anime",
       manhwa: "/manhwa",
+      tv: "/tv",
     };
 
     setMajorMode(nextMajorMode);
@@ -1001,7 +1012,7 @@ export default function GuessWhoGame() {
                   Start from one dashboard, then choose any game or series collection.
                 </h1>
                 <p className="mt-4 max-w-2xl text-sm sm:text-base leading-6 text-zinc-300">
-                  Pick your lane first — games, anime, or manhwa — then jump into the board with the same clean experience on phone, tablet, and desktop.
+                  Pick your lane first — games, anime, manhwa, or TV — then jump into the board with the same clean experience on phone, tablet, and desktop.
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-end">
@@ -1025,6 +1036,12 @@ export default function GuessWhoGame() {
                 </button>
                 <button
                   className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-semibold uppercase tracking-[0.18em] text-zinc-100 transition-all duration-150 active:scale-95"
+                  onClick={() => startDashboardGame("tv")}
+                >
+                  Start TV
+                </button>
+                <button
+                  className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-semibold uppercase tracking-[0.18em] text-zinc-100 transition-all duration-150 active:scale-95"
                   onClick={() => startDashboardGame("games")}
                 >
                   Browse All
@@ -1032,7 +1049,7 @@ export default function GuessWhoGame() {
               </div>
             </div>
 
-            <div className="mt-6 grid gap-4 md:grid-cols-3">
+            <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               <button
                 className="group rounded-2xl border border-white/10 bg-white/5 p-4 text-left transition-all duration-150 hover:-translate-y-1 hover:bg-white/10 active:scale-[0.99]"
                 onClick={() => startDashboardGame("games")}
@@ -1062,6 +1079,16 @@ export default function GuessWhoGame() {
                 <p className="mt-2 text-sm text-zinc-300">Open manhwa collections and play with expanded character pools.</p>
                 <span className="mt-4 inline-flex rounded-full border border-white/10 bg-black/30 px-3 py-1 text-xs uppercase tracking-[0.18em] text-zinc-200">Open Manhwa</span>
               </button>
+
+              <button
+                className="group rounded-2xl border border-white/10 bg-white/5 p-4 text-left transition-all duration-150 hover:-translate-y-1 hover:bg-white/10 active:scale-[0.99]"
+                onClick={() => startDashboardGame("tv")}
+              >
+                <p className="text-xs uppercase tracking-[0.26em] text-zinc-400">Series</p>
+                <h2 className="mt-2 text-xl font-semibold">TMKOC</h2>
+                <p className="mt-2 text-sm text-zinc-300">Play a dedicated Taarak Mehta Ka Ooltah Chashmah character board in its own category.</p>
+                <span className="mt-4 inline-flex rounded-full border border-white/10 bg-black/30 px-3 py-1 text-xs uppercase tracking-[0.18em] text-zinc-200">Open TV</span>
+              </button>
             </div>
           </section>
         </div>
@@ -1085,7 +1112,7 @@ export default function GuessWhoGame() {
                   Live
                 </div>
                 <p className="mt-2 text-xs sm:text-sm leading-5 sm:leading-6 text-zinc-300 max-w-2xl">
-                  Fast, image-rich elimination game for Mobile Legends, anime, manhwa, and other character collections — playable offline or with a 6-digit online room code.
+                  Fast, image-rich elimination game for Mobile Legends, anime, manhwa, TV series, and other character collections — playable offline or with a 6-digit online room code.
                 </p>
               </div>
             </div>
@@ -1121,6 +1148,7 @@ export default function GuessWhoGame() {
                   <option value="games">Games</option>
                   <option value="manhwa">Manhwa</option>
                   <option value="anime">Anime</option>
+                  <option value="tv">TV</option>
                 </select>
                 <select
                   title="Select Collection"

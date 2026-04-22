@@ -1,7 +1,7 @@
 export const siteName = "MLBB- Guess Who";
 
 export const siteDescription =
-  "Play a fast Mobile Legends, anime, manhwa, and gaming character guess game with offline elimination boards and 6-digit online matches.";
+  "Play a fast Mobile Legends, anime, manhwa, TV-series, and gaming character guess game with offline elimination boards and 6-digit online matches.";
 
 export const siteKeywords = [
   "guess who game",
@@ -9,6 +9,8 @@ export const siteKeywords = [
   "MLBB quiz",
   "anime character game",
   "manhwa character game",
+  "tv character game",
+  "taarak mehta ka ooltah chashmah game",
   "online party game",
   "character guessing game",
   "browser game",
