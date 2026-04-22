@@ -7,10 +7,10 @@ type SimpleStatusChipProps = {
 export default function SimpleStatusChip({ label, value, tone = "neutral" }: SimpleStatusChipProps) {
   const toneClass =
     tone === "good"
-      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+      ? "bg-white text-black border-white"
       : tone === "bad"
-        ? "bg-rose-50 text-rose-700 border-rose-200"
-        : "bg-slate-50 text-slate-700 border-slate-200";
+        ? "bg-black text-zinc-300 border-zinc-700"
+        : "bg-zinc-900 text-zinc-200 border-zinc-700";
 
   return (
     <div className={`inline-flex items-center gap-1 rounded-md border px-2.5 py-1 text-xs ${toneClass}`}>

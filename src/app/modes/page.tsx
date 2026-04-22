@@ -5,17 +5,17 @@ export default function ModesPage() {
   return (
     <PageShell title="Game Modes" subtitle="Choose your way to play">
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-lg border border-slate-200 bg-white p-5">
+        <div className="rounded-lg border border-white/15 bg-zinc-950 p-5">
           <h2 className="text-lg font-semibold">Offline Elimination Board</h2>
-          <p className="mt-1 text-sm text-slate-600">Great for local play and quick rounds.</p>
+          <p className="mt-1 text-sm text-zinc-300">Great for local play and quick rounds.</p>
         </div>
-        <div className="rounded-lg border border-slate-200 bg-white p-5">
+        <div className="rounded-lg border border-white/15 bg-zinc-950 p-5">
           <h2 className="text-lg font-semibold">Online Match (6-digit code)</h2>
-          <p className="mt-1 text-sm text-slate-600">Host or join and play best-of-3 / best-of-5.</p>
+          <p className="mt-1 text-sm text-zinc-300">Host or join and play best-of-3 / best-of-5.</p>
         </div>
       </div>
       <div className="mt-5">
-        <Link href="/" className="inline-flex rounded-md bg-slate-900 px-3 py-2 text-sm text-white hover:bg-slate-800">
+        <Link href="/" className="inline-flex rounded-md border border-white/20 bg-white px-3 py-2 text-sm text-black hover:bg-zinc-200">
           Back to Game
         </Link>
       </div>

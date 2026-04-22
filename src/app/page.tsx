@@ -895,23 +895,23 @@ export default function GuessWhoGame() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-100 text-slate-900 font-sans">
+    <main className="min-h-screen bg-black text-white font-sans">
       
       {/* Dynamic Grid Background Overlay */}
       <div className="pointer-events-none absolute inset-0" />
 
       {/* Sticky Header with Glassmorphism */}
-      <div className="sticky top-0 z-50 bg-white border-b border-slate-200 mb-6">
+      <div className="sticky top-0 z-50 bg-neutral-950 border-b border-white/15 mb-6">
         <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-6">
           <div className="text-center sm:text-left">
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900 m-0">
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white m-0">
               Guess The Character
             </h1>
-            <p className="text-slate-600 text-sm mt-1">Simple elimination board for offline and online play.</p>
+            <p className="text-zinc-300 text-sm mt-1">Simple elimination board for offline and online play.</p>
           </div>
           <div className="flex flex-wrap justify-center gap-4">
             <button
-              className={`px-4 py-2 rounded-md border font-medium text-xs uppercase transition-all ${onlineMode ? "border-emerald-400 bg-emerald-100 text-emerald-900" : "border-slate-300 bg-white text-slate-700"}`}
+              className={`px-4 py-2 rounded-md border font-medium text-xs uppercase transition-all ${onlineMode ? "border-white bg-white text-black" : "border-white/20 bg-zinc-900 text-zinc-200"}`}
               onClick={() => {
                 const next = !onlineMode;
                 setOnlineMode(next);
@@ -926,7 +926,7 @@ export default function GuessWhoGame() {
             </button>
             <select
               title="Select Game Mode"
-              className="px-3 py-2 rounded-md border border-slate-300 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
+              className="px-3 py-2 rounded-md border border-white/20 bg-zinc-900 text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-white/20"
               value={gameMode}
               onChange={(e) => setGameMode(e.target.value)}
             >
@@ -937,7 +937,7 @@ export default function GuessWhoGame() {
             </select>
             <select
               title="Select Hero Count"
-              className="px-3 py-2 rounded-md border border-slate-300 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
+              className="px-3 py-2 rounded-md border border-white/20 bg-zinc-900 text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-white/20"
               value={heroCount}
               onChange={(e) => {
                 const val = e.target.value;
@@ -951,20 +951,20 @@ export default function GuessWhoGame() {
               <option value="all">All Heroes</option>
             </select>
             <button 
-              className="px-4 py-2 rounded-md border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 text-sm transition"
+              className="px-4 py-2 rounded-md border border-white/20 bg-zinc-900 hover:bg-zinc-800 text-zinc-100 text-sm transition"
               onClick={() => setSelected([])}
             >
               Reset Clicks
             </button>
-            <Link href="/how-to-play" className="px-4 py-2 rounded-md border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 text-sm">How to Play</Link>
-            <Link href="/modes" className="px-4 py-2 rounded-md border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 text-sm">Modes</Link>
+            <Link href="/how-to-play" className="px-4 py-2 rounded-md border border-white/20 bg-zinc-900 hover:bg-zinc-800 text-zinc-100 text-sm">How to Play</Link>
+            <Link href="/modes" className="px-4 py-2 rounded-md border border-white/20 bg-zinc-900 hover:bg-zinc-800 text-zinc-100 text-sm">Modes</Link>
           </div>
         </div>
       </div>
 
       {onlineMode && (
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pb-6 relative z-10">
-          <div className="rounded-lg border border-slate-200 bg-white p-4 md:p-5 space-y-4">
+          <div className="rounded-lg border border-white/15 bg-zinc-950 p-4 md:p-5 space-y-4">
             <div className="flex flex-wrap gap-3 items-center justify-between">
               <div className="flex items-center gap-3">
                 <SimpleStatusChip label="Status" value={connectionStatus} tone={connectionStatus === "connected" ? "good" : "neutral"} />
@@ -973,9 +973,9 @@ export default function GuessWhoGame() {
                 {latencyMs !== null && <SimpleStatusChip label="Ping" value={`${latencyMs}ms`} />}
               </div>
               <div className="flex items-center gap-2">
-                <label className="text-xs uppercase tracking-widest text-slate-500">Format</label>
+                <label className="text-xs uppercase tracking-widest text-zinc-400">Format</label>
                 <select
-                  className="px-3 py-2 rounded border border-slate-300 bg-white text-sm"
+                  className="px-3 py-2 rounded border border-white/20 bg-black text-sm text-zinc-100"
                   value={matchFormat}
                   onChange={(e) => {
                     const f = e.target.value as MatchFormat;
@@ -990,33 +990,33 @@ export default function GuessWhoGame() {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <button className="px-3 py-2 rounded border border-slate-300 bg-slate-50 text-xs uppercase" onClick={hostWithCode}>Host with 6-Digit Code</button>
-              <div className="flex items-center gap-2 rounded border border-slate-300 bg-slate-50 px-2 py-1">
+              <button className="px-3 py-2 rounded border border-white/20 bg-zinc-900 text-xs uppercase" onClick={hostWithCode}>Host with 6-Digit Code</button>
+              <div className="flex items-center gap-2 rounded border border-white/20 bg-zinc-900 px-2 py-1">
                 <input
-                  className="w-28 bg-transparent text-center tracking-[0.35em] text-sm outline-none text-slate-900"
+                  className="w-28 bg-transparent text-center tracking-[0.35em] text-sm outline-none text-zinc-100"
                   placeholder="000000"
                   maxLength={6}
                   value={joinCode}
                   onChange={(e) => setJoinCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                 />
-                <button className="px-2 py-1 rounded border border-slate-300 bg-white text-[11px] uppercase" onClick={joinWithCode}>Join</button>
+                <button className="px-2 py-1 rounded border border-white/20 bg-black text-[11px] uppercase text-zinc-100" onClick={joinWithCode}>Join</button>
               </div>
-              <button className="px-3 py-2 rounded border border-slate-300 bg-slate-50 text-xs uppercase disabled:opacity-50" onClick={copyRoomCode} disabled={!roomCode}>Copy Room Code</button>
-              <button className="px-3 py-2 rounded border border-rose-600 bg-rose-600/20 text-xs uppercase" onClick={teardownConnection}>Disconnect</button>
+              <button className="px-3 py-2 rounded border border-white/20 bg-zinc-900 text-xs uppercase disabled:opacity-50" onClick={copyRoomCode} disabled={!roomCode}>Copy Room Code</button>
+              <button className="px-3 py-2 rounded border border-white/25 bg-black text-xs uppercase" onClick={teardownConnection}>Disconnect</button>
             </div>
 
-            <div className="text-[11px] text-slate-500 uppercase tracking-wider">
+            <div className="text-[11px] text-zinc-400 uppercase tracking-wider">
               RTC: {rtcState} | Data channel: {channelState}
             </div>
-            <div className="text-sm font-semibold tracking-[0.2em] text-slate-700 uppercase">
+            <div className="text-sm font-semibold tracking-[0.2em] text-zinc-100 uppercase">
               Room Code: {roomCode || "------"}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-3 rounded border border-slate-200 bg-slate-50 space-y-2">
-                <div className="text-xs uppercase tracking-widest text-slate-700">Secret Character (Only you can see)</div>
+              <div className="p-3 rounded border border-white/15 bg-black space-y-2">
+                <div className="text-xs uppercase tracking-widest text-zinc-300">Secret Character (Only you can see)</div>
                 <select
-                  className="w-full px-3 py-2 rounded border border-slate-300 bg-white text-sm"
+                  className="w-full px-3 py-2 rounded border border-white/20 bg-zinc-900 text-sm text-zinc-100"
                   value={mySecret}
                   onChange={(e) => {
                     setMySecret(e.target.value);
@@ -1031,15 +1031,15 @@ export default function GuessWhoGame() {
                     <option key={`secret-${h.name}`} value={h.name}>{h.name}</option>
                   ))}
                 </select>
-                <button className="px-3 py-2 rounded border border-emerald-600 bg-emerald-500 text-black text-xs uppercase font-bold" onClick={lockSecret}>Lock Character</button>
-                <div className="text-xs text-slate-600">You: {myReady ? "Ready" : "Not Ready"} | Opponent: {opponentReady ? "Ready" : "Not Ready"}</div>
-                <div className="text-[11px] text-slate-500">Opponent secret stored: {opponentSecret ? "Yes" : "Waiting..."}</div>
+                <button className="px-3 py-2 rounded border border-white/25 bg-white text-black text-xs uppercase font-semibold" onClick={lockSecret}>Lock Character</button>
+                <div className="text-xs text-zinc-300">You: {myReady ? "Ready" : "Not Ready"} | Opponent: {opponentReady ? "Ready" : "Not Ready"}</div>
+                <div className="text-[11px] text-zinc-400">Opponent secret stored: {opponentSecret ? "Yes" : "Waiting..."}</div>
               </div>
 
-              <div className="p-3 rounded border border-slate-200 bg-slate-50 space-y-2">
-                <div className="text-xs uppercase tracking-widest text-slate-700">Guess Opponent Character</div>
+              <div className="p-3 rounded border border-white/15 bg-black space-y-2">
+                <div className="text-xs uppercase tracking-widest text-zinc-300">Guess Opponent Character</div>
                 <select
-                  className="w-full px-3 py-2 rounded border border-slate-300 bg-white text-sm"
+                  className="w-full px-3 py-2 rounded border border-white/20 bg-zinc-900 text-sm text-zinc-100"
                   value={guessInput}
                   onChange={(e) => setGuessInput(e.target.value)}
                   disabled={!myReady || !opponentReady || !!roundWinner || !!matchWinner}
@@ -1049,25 +1049,25 @@ export default function GuessWhoGame() {
                     <option key={`guess-${h.name}`} value={h.name}>{h.name}</option>
                   ))}
                 </select>
-                <button className="px-3 py-2 rounded border border-yellow-500 bg-yellow-400 text-black text-xs uppercase font-bold disabled:opacity-60" onClick={sendGuess} disabled={!guessInput || !myReady || !opponentReady || !!roundWinner || !!matchWinner}>Submit Guess</button>
-                <div className="text-xs text-slate-600">{lastGuessInfo || "No guesses yet."}</div>
+                <button className="px-3 py-2 rounded border border-white/25 bg-white text-black text-xs uppercase font-semibold disabled:opacity-60" onClick={sendGuess} disabled={!guessInput || !myReady || !opponentReady || !!roundWinner || !!matchWinner}>Submit Guess</button>
+                <div className="text-xs text-zinc-300">{lastGuessInfo || "No guesses yet."}</div>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-200">
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-white/15">
               <div className="text-sm font-bold">Round {roundNumber} | You {myScore} - {opponentScore} Opponent | First to {winsNeeded}</div>
               <div className="flex gap-2">
                 {roundWinner && !matchWinner && (
-                  <button className="px-3 py-2 rounded border border-indigo-500 bg-indigo-500/20 text-xs uppercase" onClick={() => resetRound(true)}>Next Round</button>
+                  <button className="px-3 py-2 rounded border border-white/25 bg-zinc-900 text-xs uppercase" onClick={() => resetRound(true)}>Next Round</button>
                 )}
                 {matchWinner && (
-                  <button className="px-3 py-2 rounded border border-pink-500 bg-pink-500/20 text-xs uppercase" onClick={() => resetMatch(true)}>Reset Match</button>
+                  <button className="px-3 py-2 rounded border border-white/25 bg-zinc-900 text-xs uppercase" onClick={() => resetMatch(true)}>Reset Match</button>
                 )}
               </div>
             </div>
 
-            {roundWinner && <div className="text-sm text-slate-700">Round winner: {roundWinner === "me" ? "You" : "Opponent"}</div>}
-            {matchWinner && <div className="text-base text-emerald-300 font-bold">Match winner: {matchWinner === "me" ? "You" : "Opponent"}</div>}
+            {roundWinner && <div className="text-sm text-zinc-200">Round winner: {roundWinner === "me" ? "You" : "Opponent"}</div>}
+            {matchWinner && <div className="text-base text-white font-bold">Match winner: {matchWinner === "me" ? "You" : "Opponent"}</div>}
           </div>
         </div>
       )}
@@ -1083,8 +1083,8 @@ export default function GuessWhoGame() {
                 onClick={() => toggleSelection(hero.name)}
                 className={`group relative cursor-pointer transition-all duration-500 rounded-lg overflow-hidden shadow-xl aspect-[3/4] flex flex-col bg-slate-900 ${
                   isSelected 
-                    ? "opacity-30 grayscale-[1] scale-[0.95] border border-red-900/40" 
-                    : "hover:-translate-y-2 hover:shadow-[0_10px_30px_rgba(234,179,8,0.3)] border border-slate-700 hover:border-yellow-500/80"
+                    ? "opacity-30 grayscale-[1] scale-[0.95] border border-zinc-700" 
+                    : "hover:-translate-y-1 hover:shadow-[0_10px_24px_rgba(255,255,255,0.08)] border border-zinc-700 hover:border-zinc-300"
                 }`}
               >
                 {/* Image Section */}
@@ -1100,7 +1100,7 @@ export default function GuessWhoGame() {
                     loading="lazy"
                   />
                   {/* Subtle vignette gradient for text readability */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/100 via-black/40 to-transparent pointer-events-none opacity-80" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent pointer-events-none opacity-90" />
                   <div className="absolute inset-x-0 bottom-0 pb-3 pt-6 px-1 text-center pointer-events-none">
                     <span className="font-bold text-[11px] sm:text-[12px] tracking-widest text-slate-100 uppercase drop-shadow-[0_3px_5px_rgba(0,0,0,1)] break-words">
                       {hero.name}
@@ -1112,8 +1112,8 @@ export default function GuessWhoGame() {
                 {isSelected && (
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
                     <div className="relative flex items-center justify-center w-full h-full">
-                      <div className="absolute w-[150%] h-3 bg-red-600 rotate-[55deg] shadow-[0_0_25px_rgba(220,38,38,1)] saturate-200 blur-[0.5px]"></div>
-                      <div className="absolute w-[150%] h-3 bg-red-600 -rotate-[55deg] shadow-[0_0_25px_rgba(220,38,38,1)] saturate-200 blur-[0.5px]"></div>
+                      <div className="absolute w-[150%] h-2.5 bg-white/90 rotate-[55deg] shadow-[0_0_18px_rgba(255,255,255,0.35)] blur-[0.5px]"></div>
+                      <div className="absolute w-[150%] h-2.5 bg-white/90 -rotate-[55deg] shadow-[0_0_18px_rgba(255,255,255,0.35)] blur-[0.5px]"></div>
                     </div>
                   </div>
                 )}
