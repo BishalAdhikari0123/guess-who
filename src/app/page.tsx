@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect, useRef } from "react";
+import Peer, { DataConnection } from "peerjs";
 import { otherGames } from "../lib/other-games";
 
 type Hero = {
@@ -542,18 +543,18 @@ export default function GuessWhoGame() {
   const [lastGuessInfo, setLastGuessInfo] = useState<string>("");
 
   const [connectionStatus, setConnectionStatus] = useState<
-    "offline" | "waiting-offer" | "waiting-answer" | "connected"
+    "offline" | "hosting" | "joining" | "connected"
   >("offline");
   const [rtcState, setRtcState] = useState<string>("new");
   const [channelState, setChannelState] = useState<string>("closed");
   const [peerLive, setPeerLive] = useState(false);
   const [latencyMs, setLatencyMs] = useState<number | null>(null);
   const [lastSeenAt, setLastSeenAt] = useState<number | null>(null);
-  const [localSignal, setLocalSignal] = useState("");
-  const [remoteSignal, setRemoteSignal] = useState("");
+  const [roomCode, setRoomCode] = useState("");
+  const [joinCode, setJoinCode] = useState("");
 
-  const pcRef = useRef<RTCPeerConnection | null>(null);
-  const dcRef = useRef<RTCDataChannel | null>(null);
+  const peerRef = useRef<Peer | null>(null);
+  const connRef = useRef<DataConnection | null>(null);
   const autoGuessRoundRef = useRef<number>(-1);
   const heartbeatTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -631,14 +632,14 @@ export default function GuessWhoGame() {
       heartbeatTimerRef.current = null;
     }
 
-    if (dcRef.current) {
-      dcRef.current.close();
-      dcRef.current = null;
+    if (connRef.current) {
+      connRef.current.close();
+      connRef.current = null;
     }
 
-    if (pcRef.current) {
-      pcRef.current.close();
-      pcRef.current = null;
+    if (peerRef.current) {
+      peerRef.current.destroy();
+      peerRef.current = null;
     }
 
     setConnectionStatus("offline");
@@ -650,74 +651,115 @@ export default function GuessWhoGame() {
     setOpponentReady(false);
   };
 
-  const attachDataChannel = (dc: RTCDataChannel) => {
-    dcRef.current = dc;
-    setChannelState(dc.readyState);
-    dc.onopen = () => {
+  const attachConnection = (conn: DataConnection) => {
+    connRef.current = conn;
+    setChannelState(conn.open ? "open" : "connecting");
+
+    conn.on("open", () => {
       setConnectionStatus("connected");
       setChannelState("open");
       sendMessage({ type: "ping", at: Date.now() });
-    };
-    dc.onclose = () => {
+    });
+
+    conn.on("close", () => {
       setConnectionStatus("offline");
       setChannelState("closed");
       setPeerLive(false);
-    };
-    dc.onmessage = (event) => {
+    });
+
+    conn.on("data", (payload) => {
       try {
-        const msg = JSON.parse(event.data) as NetMessage;
+        const msg = (typeof payload === "string" ? JSON.parse(payload) : payload) as NetMessage;
         handleNetMessage(msg);
       } catch {
         // ignore malformed packets
       }
-    };
-  };
-
-  const createPeer = (host: boolean) => {
-    teardownConnection();
-
-    const pc = new RTCPeerConnection({
-      iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
     });
 
-    pc.onicecandidate = () => {
-      if (pc.localDescription) {
-        setLocalSignal(JSON.stringify(pc.localDescription));
-      }
-    };
-
-    pc.onconnectionstatechange = () => {
-      setRtcState(pc.connectionState);
-      if (pc.connectionState === "connected") {
-        setConnectionStatus("connected");
-      }
-      if (pc.connectionState === "failed" || pc.connectionState === "disconnected" || pc.connectionState === "closed") {
-        setConnectionStatus("offline");
-        setPeerLive(false);
-      }
-    };
-
-    if (host) {
-      attachDataChannel(pc.createDataChannel("guess-channel"));
-      setConnectionStatus("waiting-answer");
-    } else {
-      pc.ondatachannel = (ev) => attachDataChannel(ev.channel);
-      setConnectionStatus("waiting-offer");
-    }
-
-    pcRef.current = pc;
-    return pc;
+    conn.on("error", (err) => {
+      setLastGuessInfo(`Connection error: ${err.type}`);
+      setConnectionStatus("offline");
+      setPeerLive(false);
+    });
   };
 
   const sendMessage = (message: NetMessage) => {
-    if (dcRef.current && dcRef.current.readyState === "open") {
-      dcRef.current.send(JSON.stringify(message));
+    if (connRef.current && connRef.current.open) {
+      connRef.current.send(message);
     }
   };
 
-  const copyLocalSignal = async () => {
-    if (!localSignal) return;
-    await navigator.clipboard.writeText(localSignal);
+  const generateRoomCode = () => `${Math.floor(100000 + Math.random() * 900000)}`;
+
+  const hostWithCode = async () => {
+    teardownConnection();
+    const code = generateRoomCode();
+    setRoomCode(code);
+    setJoinCode(code);
+    setConnectionStatus("hosting");
+    setRtcState("creating-host");
+
+    const peer = new Peer(code);
+    peerRef.current = peer;
+
+    peer.on("open", () => {
+      setRtcState("host-ready");
+    });
+
+    peer.on("connection", (conn) => {
+      setRtcState("peer-joined");
+      attachConnection(conn);
+    });
+
+    peer.on("disconnected", () => {
+      setConnectionStatus("offline");
+      setPeerLive(false);
+      setRtcState("disconnected");
+    });
+
+    peer.on("error", (err) => {
+      setLastGuessInfo(`Peer error: ${err.type}`);
+      setConnectionStatus("offline");
+      setRtcState(`error:${err.type}`);
+    });
+  };
+
+  const joinWithCode = async () => {
+    const code = joinCode.trim();
+    if (!/^\d{6}$/.test(code)) {
+      setLastGuessInfo("Enter a valid 6-digit code.");
+      return;
+    }
+
+    teardownConnection();
+    setConnectionStatus("joining");
+    setRtcState("creating-client");
+
+    const peer = new Peer();
+    peerRef.current = peer;
+
+    peer.on("open", () => {
+      setRtcState("client-ready");
+      const conn = peer.connect(code, { reliable: true });
+      attachConnection(conn);
+    });
+
+    peer.on("disconnected", () => {
+      setConnectionStatus("offline");
+      setPeerLive(false);
+      setRtcState("disconnected");
+    });
+
+    peer.on("error", (err) => {
+      setLastGuessInfo(`Peer error: ${err.type}`);
+      setConnectionStatus("offline");
+      setRtcState(`error:${err.type}`);
+    });
+  };
+
+  const copyRoomCode = async () => {
+    if (!roomCode) return;
+    await navigator.clipboard.writeText(roomCode);
   };
 
   const concludeRound = (winner: "me" | "opponent") => {
@@ -804,43 +846,9 @@ export default function GuessWhoGame() {
     }
   };
 
-  const createOffer = async () => {
-    const pc = createPeer(true);
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-  };
-
-  const acceptOfferAndCreateAnswer = async () => {
-    const pc = createPeer(false);
-    const offer = JSON.parse(remoteSignal);
-    await pc.setRemoteDescription(new RTCSessionDescription(offer));
-    const answer = await pc.createAnswer();
-    await pc.setLocalDescription(answer);
-  };
-
-  const connectWithAnswer = async () => {
-    if (!pcRef.current) return;
-    const answer = JSON.parse(remoteSignal);
-    await pcRef.current.setRemoteDescription(new RTCSessionDescription(answer));
-  };
-
-  const connectUsingSignal = async () => {
-    if (!remoteSignal.trim()) return;
-    const desc = JSON.parse(remoteSignal);
-
-    if (desc.type === "offer") {
-      const pc = createPeer(false);
-      await pc.setRemoteDescription(new RTCSessionDescription(desc));
-      const answer = await pc.createAnswer();
-      await pc.setLocalDescription(answer);
-      return;
-    }
-
-    if (desc.type === "answer") {
-      if (!pcRef.current) return;
-      await pcRef.current.setRemoteDescription(new RTCSessionDescription(desc));
-    }
-  };
+  useEffect(() => {
+    return () => teardownConnection();
+  }, []);
 
   const toggleSelection = (name: string) => {
     if (selected.includes(name)) {
@@ -884,8 +892,8 @@ export default function GuessWhoGame() {
                 setOnlineMode(next);
                 if (!next) {
                   teardownConnection();
-                  setRemoteSignal("");
-                  setLocalSignal("");
+                  setRoomCode("");
+                  setJoinCode("");
                 }
               }}
             >
@@ -955,31 +963,26 @@ export default function GuessWhoGame() {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <button className="px-3 py-2 rounded border border-slate-700 bg-slate-800 text-xs uppercase" onClick={createOffer}>Create Offer (Host)</button>
-              <button className="px-3 py-2 rounded border border-slate-700 bg-slate-800 text-xs uppercase" onClick={acceptOfferAndCreateAnswer}>Accept Offer (Join)</button>
-              <button className="px-3 py-2 rounded border border-slate-700 bg-slate-800 text-xs uppercase" onClick={connectWithAnswer}>Connect With Answer</button>
-              <button className="px-3 py-2 rounded border border-indigo-600 bg-indigo-600/20 text-xs uppercase" onClick={connectUsingSignal}>Connect Using Remote Signal</button>
-              <button className="px-3 py-2 rounded border border-slate-700 bg-slate-800 text-xs uppercase" onClick={copyLocalSignal}>Copy Local Signal</button>
+              <button className="px-3 py-2 rounded border border-slate-700 bg-slate-800 text-xs uppercase" onClick={hostWithCode}>Host with 6-Digit Code</button>
+              <div className="flex items-center gap-2 rounded border border-slate-700 bg-slate-950 px-2 py-1">
+                <input
+                  className="w-28 bg-transparent text-center tracking-[0.35em] text-sm outline-none"
+                  placeholder="000000"
+                  maxLength={6}
+                  value={joinCode}
+                  onChange={(e) => setJoinCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                />
+                <button className="px-2 py-1 rounded border border-slate-600 bg-slate-800 text-[11px] uppercase" onClick={joinWithCode}>Join</button>
+              </div>
+              <button className="px-3 py-2 rounded border border-slate-700 bg-slate-800 text-xs uppercase disabled:opacity-50" onClick={copyRoomCode} disabled={!roomCode}>Copy Room Code</button>
               <button className="px-3 py-2 rounded border border-rose-600 bg-rose-600/20 text-xs uppercase" onClick={teardownConnection}>Disconnect</button>
             </div>
 
             <div className="text-[11px] text-slate-400 uppercase tracking-wider">
               RTC: {rtcState} | Data channel: {channelState}
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <textarea
-                className="w-full min-h-24 p-3 rounded border border-slate-700 bg-slate-950 text-xs"
-                placeholder="Your signal JSON appears here"
-                value={localSignal}
-                readOnly
-              />
-              <textarea
-                className="w-full min-h-24 p-3 rounded border border-slate-700 bg-slate-950 text-xs"
-                placeholder="Paste remote signal JSON here"
-                value={remoteSignal}
-                onChange={(e) => setRemoteSignal(e.target.value)}
-              />
+            <div className="text-sm font-bold tracking-[0.2em] text-amber-300 uppercase">
+              Room Code: {roomCode || "------"}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
