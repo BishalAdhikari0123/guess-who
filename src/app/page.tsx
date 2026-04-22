@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { otherGames } from "../lib/other-games";
 
 type Hero = {
@@ -511,13 +511,45 @@ const heroes: Hero[] = [
   }
 ];
 
-type Message = { id: number; text: string; sender: "system" | "user" | "correct" | "incorrect" };
+type MatchFormat = "bo3" | "bo5";
+
+type NetMessage =
+  | { type: "format"; format: MatchFormat }
+  | { type: "ready"; ready: boolean }
+  | { type: "guess"; name: string }
+  | { type: "guessResult"; name: string; correct: boolean }
+  | { type: "nextRound" }
+  | { type: "resetMatch" };
 
 export default function GuessWhoGame() {
   const [selected, setSelected] = useState<string[]>([]);
   const [displayedHeroes, setDisplayedHeroes] = useState<Hero[]>([]);
   const [heroCount, setHeroCount] = useState<number | 'all'>(50);
   const [gameMode, setGameMode] = useState<string>("Mobile Legends");
+  const [onlineMode, setOnlineMode] = useState<boolean>(false);
+  const [matchFormat, setMatchFormat] = useState<MatchFormat>("bo3");
+  const [myScore, setMyScore] = useState(0);
+  const [opponentScore, setOpponentScore] = useState(0);
+  const [roundNumber, setRoundNumber] = useState(1);
+  const [roundWinner, setRoundWinner] = useState<"me" | "opponent" | null>(null);
+  const [matchWinner, setMatchWinner] = useState<"me" | "opponent" | null>(null);
+  const [mySecret, setMySecret] = useState<string>("");
+  const [myReady, setMyReady] = useState(false);
+  const [opponentReady, setOpponentReady] = useState(false);
+  const [guessInput, setGuessInput] = useState<string>("");
+  const [lastGuessInfo, setLastGuessInfo] = useState<string>("");
+
+  const [connectionStatus, setConnectionStatus] = useState<
+    "offline" | "waiting-offer" | "waiting-answer" | "connected"
+  >("offline");
+  const [localSignal, setLocalSignal] = useState("");
+  const [remoteSignal, setRemoteSignal] = useState("");
+
+  const pcRef = useRef<RTCPeerConnection | null>(null);
+  const dcRef = useRef<RTCDataChannel | null>(null);
+  const autoGuessRoundRef = useRef<number>(-1);
+
+  const winsNeeded = matchFormat === "bo3" ? 2 : 3;
 
   useEffect(() => {
     let currentRoster = heroes;
@@ -526,7 +558,182 @@ export default function GuessWhoGame() {
     }
     setDisplayedHeroes(heroCount === 'all' ? currentRoster : currentRoster.slice(0, heroCount));
     setSelected([]);
+    setMySecret("");
+    setMyReady(false);
+    setOpponentReady(false);
+    setLastGuessInfo("");
   }, [heroCount, gameMode]);
+
+  useEffect(() => {
+    if (!onlineMode || connectionStatus !== "connected") return;
+    const remaining = displayedHeroes.filter((h) => !selected.includes(h.name));
+    if (
+      myReady &&
+      opponentReady &&
+      !roundWinner &&
+      !matchWinner &&
+      remaining.length === 1 &&
+      autoGuessRoundRef.current !== roundNumber
+    ) {
+      const onlyName = remaining[0].name;
+      autoGuessRoundRef.current = roundNumber;
+      setGuessInput(onlyName);
+      sendMessage({ type: "guess", name: onlyName });
+      setLastGuessInfo(`Auto-guess sent: ${onlyName}`);
+    }
+  }, [onlineMode, connectionStatus, myReady, opponentReady, roundWinner, matchWinner, selected, displayedHeroes, roundNumber]);
+
+  const attachDataChannel = (dc: RTCDataChannel) => {
+    dcRef.current = dc;
+    dc.onopen = () => setConnectionStatus("connected");
+    dc.onclose = () => setConnectionStatus("offline");
+    dc.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data) as NetMessage;
+        handleNetMessage(msg);
+      } catch {
+        // ignore malformed packets
+      }
+    };
+  };
+
+  const createPeer = (host: boolean) => {
+    if (pcRef.current) {
+      pcRef.current.close();
+      pcRef.current = null;
+      dcRef.current = null;
+    }
+
+    const pc = new RTCPeerConnection({
+      iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+    });
+
+    pc.onicecandidate = () => {
+      if (pc.localDescription) {
+        setLocalSignal(JSON.stringify(pc.localDescription));
+      }
+    };
+
+    pc.onconnectionstatechange = () => {
+      if (pc.connectionState === "connected") {
+        setConnectionStatus("connected");
+      }
+      if (pc.connectionState === "failed" || pc.connectionState === "disconnected" || pc.connectionState === "closed") {
+        setConnectionStatus("offline");
+      }
+    };
+
+    if (host) {
+      attachDataChannel(pc.createDataChannel("guess-channel"));
+      setConnectionStatus("waiting-answer");
+    } else {
+      pc.ondatachannel = (ev) => attachDataChannel(ev.channel);
+      setConnectionStatus("waiting-offer");
+    }
+
+    pcRef.current = pc;
+    return pc;
+  };
+
+  const sendMessage = (message: NetMessage) => {
+    if (dcRef.current && dcRef.current.readyState === "open") {
+      dcRef.current.send(JSON.stringify(message));
+    }
+  };
+
+  const concludeRound = (winner: "me" | "opponent") => {
+    if (roundWinner || matchWinner) return;
+
+    const nextMy = myScore + (winner === "me" ? 1 : 0);
+    const nextOpp = opponentScore + (winner === "opponent" ? 1 : 0);
+
+    setMyScore(nextMy);
+    setOpponentScore(nextOpp);
+    setRoundWinner(winner);
+
+    if (nextMy >= winsNeeded || nextOpp >= winsNeeded) {
+      setMatchWinner(winner);
+    }
+  };
+
+  const resetRound = (broadcast = true) => {
+    setSelected([]);
+    setGuessInput("");
+    setLastGuessInfo("");
+    setMySecret("");
+    setMyReady(false);
+    setOpponentReady(false);
+    setRoundWinner(null);
+    autoGuessRoundRef.current = -1;
+    setRoundNumber((r) => r + 1);
+    if (broadcast) sendMessage({ type: "nextRound" });
+  };
+
+  const resetMatch = (broadcast = true) => {
+    setMyScore(0);
+    setOpponentScore(0);
+    setRoundNumber(1);
+    setMatchWinner(null);
+    setRoundWinner(null);
+    setSelected([]);
+    setGuessInput("");
+    setLastGuessInfo("");
+    setMySecret("");
+    setMyReady(false);
+    setOpponentReady(false);
+    autoGuessRoundRef.current = -1;
+    if (broadcast) sendMessage({ type: "resetMatch" });
+  };
+
+  const handleNetMessage = (msg: NetMessage) => {
+    switch (msg.type) {
+      case "format":
+        setMatchFormat(msg.format);
+        break;
+      case "ready":
+        setOpponentReady(msg.ready);
+        break;
+      case "guess": {
+        const correct = mySecret.length > 0 && msg.name === mySecret;
+        sendMessage({ type: "guessResult", name: msg.name, correct });
+        setLastGuessInfo(`Opponent guessed: ${msg.name} (${correct ? "correct" : "wrong"})`);
+        if (correct) concludeRound("opponent");
+        break;
+      }
+      case "guessResult":
+        setLastGuessInfo(`Your guess: ${msg.name} (${msg.correct ? "correct" : "wrong"})`);
+        if (msg.correct) concludeRound("me");
+        break;
+      case "nextRound":
+        resetRound(false);
+        break;
+      case "resetMatch":
+        resetMatch(false);
+        break;
+      default:
+        break;
+    }
+  };
+
+  const createOffer = async () => {
+    const pc = createPeer(true);
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+  };
+
+  const acceptOfferAndCreateAnswer = async () => {
+    const pc = createPeer(false);
+    const offer = JSON.parse(remoteSignal);
+    await pc.setRemoteDescription(new RTCSessionDescription(offer));
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+  };
+
+  const connectWithAnswer = async () => {
+    if (!pcRef.current) return;
+    const answer = JSON.parse(remoteSignal);
+    await pcRef.current.setRemoteDescription(new RTCSessionDescription(answer));
+  };
 
   const toggleSelection = (name: string) => {
     if (selected.includes(name)) {
@@ -534,6 +741,17 @@ export default function GuessWhoGame() {
     } else {
       setSelected([...selected, name]);
     }
+  };
+
+  const lockSecret = () => {
+    if (!mySecret) return;
+    setMyReady(true);
+    sendMessage({ type: "ready", ready: true });
+  };
+
+  const sendGuess = () => {
+    if (!guessInput || !myReady || !opponentReady || roundWinner || matchWinner) return;
+    sendMessage({ type: "guess", name: guessInput });
   };
 
   return (
@@ -552,6 +770,17 @@ export default function GuessWhoGame() {
             <p className="text-amber-500/80 text-xs sm:text-sm mt-2 font-bold tracking-[0.3em] uppercase drop-shadow-md text-glow">Eliminate the board</p>
           </div>
           <div className="flex flex-wrap justify-center gap-4">
+            <button
+              className={`px-4 py-3 rounded-lg border font-bold tracking-wider text-xs uppercase transition-all ${onlineMode ? "border-emerald-500 bg-emerald-600 text-black" : "border-slate-700/80 bg-slate-900 text-white"}`}
+              onClick={() => {
+                setOnlineMode((v) => !v);
+                setConnectionStatus("offline");
+                setRemoteSignal("");
+                setLocalSignal("");
+              }}
+            >
+              {onlineMode ? "Online Mode On" : "Online Mode Off"}
+            </button>
             <select
               title="Select Game Mode"
               className="px-4 py-3 rounded-lg border border-slate-700/80 bg-slate-900 text-white font-bold tracking-wider text-xs uppercase focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
@@ -588,6 +817,108 @@ export default function GuessWhoGame() {
         </div>
       </div>
 
+      {onlineMode && (
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pb-6 relative z-10">
+          <div className="rounded-xl border border-slate-700/80 bg-slate-900/70 p-4 md:p-6 space-y-4">
+            <div className="flex flex-wrap gap-3 items-center justify-between">
+              <div className="text-xs uppercase tracking-widest text-amber-300">Status: {connectionStatus}</div>
+              <div className="flex items-center gap-2">
+                <label className="text-xs uppercase tracking-widest text-slate-300">Format</label>
+                <select
+                  className="px-3 py-2 rounded border border-slate-700 bg-slate-950 text-sm"
+                  value={matchFormat}
+                  onChange={(e) => {
+                    const f = e.target.value as MatchFormat;
+                    setMatchFormat(f);
+                    sendMessage({ type: "format", format: f });
+                  }}
+                >
+                  <option value="bo3">Best of 3</option>
+                  <option value="bo5">Best of 5</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <button className="px-3 py-2 rounded border border-slate-700 bg-slate-800 text-xs uppercase" onClick={createOffer}>Create Offer (Host)</button>
+              <button className="px-3 py-2 rounded border border-slate-700 bg-slate-800 text-xs uppercase" onClick={acceptOfferAndCreateAnswer}>Accept Offer (Join)</button>
+              <button className="px-3 py-2 rounded border border-slate-700 bg-slate-800 text-xs uppercase" onClick={connectWithAnswer}>Connect With Answer</button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <textarea
+                className="w-full min-h-24 p-3 rounded border border-slate-700 bg-slate-950 text-xs"
+                placeholder="Your signal JSON appears here"
+                value={localSignal}
+                readOnly
+              />
+              <textarea
+                className="w-full min-h-24 p-3 rounded border border-slate-700 bg-slate-950 text-xs"
+                placeholder="Paste remote signal JSON here"
+                value={remoteSignal}
+                onChange={(e) => setRemoteSignal(e.target.value)}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-3 rounded border border-slate-700 bg-slate-950/70 space-y-2">
+                <div className="text-xs uppercase tracking-widest text-amber-300">Secret Character (Only you can see)</div>
+                <select
+                  className="w-full px-3 py-2 rounded border border-slate-700 bg-black text-sm"
+                  value={mySecret}
+                  onChange={(e) => {
+                    setMySecret(e.target.value);
+                    if (myReady) {
+                      setMyReady(false);
+                      sendMessage({ type: "ready", ready: false });
+                    }
+                  }}
+                >
+                  <option value="">Select your secret character</option>
+                  {displayedHeroes.map((h) => (
+                    <option key={`secret-${h.name}`} value={h.name}>{h.name}</option>
+                  ))}
+                </select>
+                <button className="px-3 py-2 rounded border border-emerald-600 bg-emerald-500 text-black text-xs uppercase font-bold" onClick={lockSecret}>Lock Character</button>
+                <div className="text-xs text-slate-300">You: {myReady ? "Ready" : "Not Ready"} | Opponent: {opponentReady ? "Ready" : "Not Ready"}</div>
+              </div>
+
+              <div className="p-3 rounded border border-slate-700 bg-slate-950/70 space-y-2">
+                <div className="text-xs uppercase tracking-widest text-amber-300">Guess Opponent Character</div>
+                <select
+                  className="w-full px-3 py-2 rounded border border-slate-700 bg-black text-sm"
+                  value={guessInput}
+                  onChange={(e) => setGuessInput(e.target.value)}
+                  disabled={!myReady || !opponentReady || !!roundWinner || !!matchWinner}
+                >
+                  <option value="">Select your guess</option>
+                  {displayedHeroes.map((h) => (
+                    <option key={`guess-${h.name}`} value={h.name}>{h.name}</option>
+                  ))}
+                </select>
+                <button className="px-3 py-2 rounded border border-yellow-500 bg-yellow-400 text-black text-xs uppercase font-bold disabled:opacity-60" onClick={sendGuess} disabled={!guessInput || !myReady || !opponentReady || !!roundWinner || !!matchWinner}>Submit Guess</button>
+                <div className="text-xs text-slate-300">{lastGuessInfo || "No guesses yet."}</div>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-700">
+              <div className="text-sm font-bold">Round {roundNumber} | You {myScore} - {opponentScore} Opponent | First to {winsNeeded}</div>
+              <div className="flex gap-2">
+                {roundWinner && !matchWinner && (
+                  <button className="px-3 py-2 rounded border border-indigo-500 bg-indigo-500/20 text-xs uppercase" onClick={() => resetRound(true)}>Next Round</button>
+                )}
+                {matchWinner && (
+                  <button className="px-3 py-2 rounded border border-pink-500 bg-pink-500/20 text-xs uppercase" onClick={() => resetMatch(true)}>Reset Match</button>
+                )}
+              </div>
+            </div>
+
+            {roundWinner && <div className="text-sm text-amber-300">Round winner: {roundWinner === "me" ? "You" : "Opponent"}</div>}
+            {matchWinner && <div className="text-base text-emerald-300 font-bold">Match winner: {matchWinner === "me" ? "You" : "Opponent"}</div>}
+          </div>
+        </div>
+      )}
+
       {/* Main Grid */}
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pb-20 flex flex-col items-center relative z-10">
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-10 gap-3 sm:gap-4 w-full">
@@ -604,11 +935,12 @@ export default function GuessWhoGame() {
                 }`}
               >
                 {/* Image Section */}
-                <div className="absolute inset-0 w-full h-full bg-black">
+                <div className={`absolute inset-0 w-full h-full ${gameMode === "Cookie Run: Kingdom" ? "bg-slate-100" : "bg-black"}`}>
                   <img 
                     src={hero.image} 
                     alt={hero.name} 
-                    className={`w-full h-full object-cover transition-all duration-700 ${!isSelected ? "group-hover:scale-[1.2] group-hover:brightness-125" : ""}`}
+                    className={`w-full h-full object-contain p-1 transition-all duration-700 ${!isSelected ? "group-hover:scale-[1.08] group-hover:brightness-110" : ""}`}
+                    referrerPolicy="no-referrer"
                     onError={(e) => {
                       e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(hero.name)}&background=1e293b&color=f8fafc&size=256`;
                     }}
