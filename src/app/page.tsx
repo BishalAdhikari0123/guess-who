@@ -519,7 +519,7 @@ type NetMessage =
   | { type: "ready"; ready: boolean }
   | { type: "secretLocked"; name: string }
   | { type: "guess"; name: string }
-  | { type: "guessResult"; name: string; correct: boolean }
+  | { type: "roundEnd"; guess: string; correct: boolean; winner: "me" | "opponent" }
   | { type: "nextRound" }
   | { type: "resetMatch" }
   | { type: "ping"; at: number }
@@ -582,6 +582,7 @@ export default function GuessWhoGame() {
     if (
       myReady &&
       opponentReady &&
+      opponentSecret &&
       !roundWinner &&
       !matchWinner &&
       remaining.length === 1 &&
@@ -590,10 +591,14 @@ export default function GuessWhoGame() {
       const onlyName = remaining[0].name;
       autoGuessRoundRef.current = roundNumber;
       setGuessInput(onlyName);
+      const correct = onlyName === opponentSecret;
+      const winner: "me" | "opponent" = correct ? "me" : "opponent";
+      setLastGuessInfo(`Auto-guess: ${onlyName} (${correct ? "correct" : "wrong"})`);
+      concludeRound(winner);
       sendMessage({ type: "guess", name: onlyName });
-      setLastGuessInfo(`Auto-guess sent: ${onlyName}`);
+      sendMessage({ type: "roundEnd", guess: onlyName, correct, winner });
     }
-  }, [onlineMode, connectionStatus, myReady, opponentReady, roundWinner, matchWinner, selected, displayedHeroes, roundNumber]);
+  }, [onlineMode, connectionStatus, myReady, opponentReady, opponentSecret, roundWinner, matchWinner, selected, displayedHeroes, roundNumber]);
 
   useEffect(() => {
     if (!onlineMode || connectionStatus !== "connected") {
@@ -662,6 +667,12 @@ export default function GuessWhoGame() {
       setConnectionStatus("connected");
       setChannelState("open");
       sendMessage({ type: "ping", at: Date.now() });
+      if (mySecret) {
+        sendMessage({ type: "secretLocked", name: mySecret });
+      }
+      if (myReady) {
+        sendMessage({ type: "ready", ready: true });
+      }
     });
 
     conn.on("close", () => {
@@ -824,15 +835,12 @@ export default function GuessWhoGame() {
         setLastGuessInfo("Opponent locked a secret character.");
         break;
       case "guess": {
-        const correct = mySecret.length > 0 && msg.name === mySecret;
-        sendMessage({ type: "guessResult", name: msg.name, correct });
-        setLastGuessInfo(`Opponent guessed: ${msg.name} (${correct ? "correct" : "wrong"})`);
-        if (correct) concludeRound("opponent");
+        setLastGuessInfo(`Opponent guessed: ${msg.name}`);
         break;
       }
-      case "guessResult":
-        setLastGuessInfo(`Your guess: ${msg.name} (${msg.correct ? "correct" : "wrong"})`);
-        if (msg.correct) concludeRound("me");
+      case "roundEnd":
+        setLastGuessInfo(`Your guess: ${msg.guess} (${msg.correct ? "correct" : "wrong"})`);
+        concludeRound(msg.winner);
         break;
       case "nextRound":
         resetRound(false);
@@ -875,11 +883,13 @@ export default function GuessWhoGame() {
   };
 
   const sendGuess = () => {
-    if (!guessInput || !myReady || !opponentReady || roundWinner || matchWinner) return;
+    if (!guessInput || !myReady || !opponentReady || !opponentSecret || roundWinner || matchWinner) return;
     const correct = !!opponentSecret && guessInput === opponentSecret;
+    const winner: "me" | "opponent" = correct ? "me" : "opponent";
     setLastGuessInfo(`Your guess: ${guessInput} (${correct ? "correct" : "wrong"})`);
-    if (correct) concludeRound("me");
+    concludeRound(winner);
     sendMessage({ type: "guess", name: guessInput });
+    sendMessage({ type: "roundEnd", guess: guessInput, correct, winner });
   };
 
   return (
