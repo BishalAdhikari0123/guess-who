@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import Peer, { DataConnection } from "peerjs";
 import { otherGames } from "../lib/other-games";
+import Link from "next/link";
+import SimpleStatusChip from "@/components/game/SimpleStatusChip";
 
 type Hero = {
   name: string;
@@ -893,23 +895,23 @@ export default function GuessWhoGame() {
   };
 
   return (
-    <main className="min-h-screen relative bg-[#0a0a14] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-950 via-slate-950 to-black text-slate-100 font-sans selection:bg-yellow-500/30">
+    <main className="min-h-screen bg-slate-100 text-slate-900 font-sans">
       
       {/* Dynamic Grid Background Overlay */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+CjxwYXRoIGQ9Ik0wIDBoNDB2NDBIMHoiIGZpbGw9Im5vbmUiLz4KPHBhdGggZD0iTTAgMGgwLjV2NDBIMHptNDAgMGgtMC41djQwSDQweiIgZmlsbD0icmdiYSgyNTUsIDI1NSwgMjU1LCAwLjA0KSIvPgo8cGF0aCBkPSJNMCAwaDQwdjAuNUgwek0wIDQwaDQwdi0wLjVIMHoiIGZpbGw9InJnYmEoMjU1LCAyNTUsIDI1NSwgMC4wNCkiLz4KPC9zdmc+')] opacity-20 pointer-events-none mix-blend-screen" />
+      <div className="pointer-events-none absolute inset-0" />
 
       {/* Sticky Header with Glassmorphism */}
-      <div className="sticky top-0 z-50 backdrop-blur-xl bg-black/40 border-b border-white/10 shadow-2xl mb-12">
+      <div className="sticky top-0 z-50 bg-white border-b border-slate-200 mb-6">
         <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-6">
           <div className="text-center sm:text-left">
-            <h1 className="text-3xl sm:text-5xl font-black uppercase tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-yellow-500 to-amber-700 drop-shadow-[0_0_20px_rgba(234,179,8,0.4)] m-0">
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900 m-0">
               Guess The Character
             </h1>
-            <p className="text-amber-500/80 text-xs sm:text-sm mt-2 font-bold tracking-[0.3em] uppercase drop-shadow-md text-glow">Eliminate the board</p>
+            <p className="text-slate-600 text-sm mt-1">Simple elimination board for offline and online play.</p>
           </div>
           <div className="flex flex-wrap justify-center gap-4">
             <button
-              className={`px-4 py-3 rounded-lg border font-bold tracking-wider text-xs uppercase transition-all ${onlineMode ? "border-emerald-500 bg-emerald-600 text-black" : "border-slate-700/80 bg-slate-900 text-white"}`}
+              className={`px-4 py-2 rounded-md border font-medium text-xs uppercase transition-all ${onlineMode ? "border-emerald-400 bg-emerald-100 text-emerald-900" : "border-slate-300 bg-white text-slate-700"}`}
               onClick={() => {
                 const next = !onlineMode;
                 setOnlineMode(next);
@@ -924,7 +926,7 @@ export default function GuessWhoGame() {
             </button>
             <select
               title="Select Game Mode"
-              className="px-4 py-3 rounded-lg border border-slate-700/80 bg-slate-900 text-white font-bold tracking-wider text-xs uppercase focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
+              className="px-3 py-2 rounded-md border border-slate-300 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
               value={gameMode}
               onChange={(e) => setGameMode(e.target.value)}
             >
@@ -935,7 +937,7 @@ export default function GuessWhoGame() {
             </select>
             <select
               title="Select Hero Count"
-              className="px-4 py-3 rounded-lg border border-slate-700/80 bg-slate-900 text-white font-bold tracking-wider text-xs uppercase focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
+              className="px-3 py-2 rounded-md border border-slate-300 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
               value={heroCount}
               onChange={(e) => {
                 const val = e.target.value;
@@ -949,29 +951,31 @@ export default function GuessWhoGame() {
               <option value="all">All Heroes</option>
             </select>
             <button 
-              className="px-6 py-3 rounded-lg border border-slate-700/80 bg-slate-800/80 hover:bg-slate-700 text-white transition-all hover:-translate-y-0.5 shadow-lg hover:shadow-slate-700/50 font-bold tracking-wider text-xs uppercase backdrop-blur-sm active:scale-95 focus:outline-none focus:ring-2 focus:ring-slate-500/50"
+              className="px-4 py-2 rounded-md border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 text-sm transition"
               onClick={() => setSelected([])}
             >
               Reset Clicks
             </button>
+            <Link href="/how-to-play" className="px-4 py-2 rounded-md border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 text-sm">How to Play</Link>
+            <Link href="/modes" className="px-4 py-2 rounded-md border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 text-sm">Modes</Link>
           </div>
         </div>
       </div>
 
       {onlineMode && (
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pb-6 relative z-10">
-          <div className="rounded-xl border border-slate-700/80 bg-slate-900/70 p-4 md:p-6 space-y-4">
+          <div className="rounded-lg border border-slate-200 bg-white p-4 md:p-5 space-y-4">
             <div className="flex flex-wrap gap-3 items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="text-xs uppercase tracking-widest text-amber-300">Status: {connectionStatus}</div>
+                <SimpleStatusChip label="Status" value={connectionStatus} tone={connectionStatus === "connected" ? "good" : "neutral"} />
                 <div className={`h-2.5 w-2.5 rounded-full ${peerLive ? "bg-emerald-400 animate-pulse" : "bg-red-400"}`} />
-                <div className="text-[11px] text-slate-300 uppercase tracking-wider">Peer {peerLive ? "Live" : "Not Live"}</div>
-                {latencyMs !== null && <div className="text-[11px] text-slate-300 uppercase tracking-wider">Ping {latencyMs}ms</div>}
+                <SimpleStatusChip label="Peer" value={peerLive ? "Live" : "Not Live"} tone={peerLive ? "good" : "bad"} />
+                {latencyMs !== null && <SimpleStatusChip label="Ping" value={`${latencyMs}ms`} />}
               </div>
               <div className="flex items-center gap-2">
-                <label className="text-xs uppercase tracking-widest text-slate-300">Format</label>
+                <label className="text-xs uppercase tracking-widest text-slate-500">Format</label>
                 <select
-                  className="px-3 py-2 rounded border border-slate-700 bg-slate-950 text-sm"
+                  className="px-3 py-2 rounded border border-slate-300 bg-white text-sm"
                   value={matchFormat}
                   onChange={(e) => {
                     const f = e.target.value as MatchFormat;
@@ -986,33 +990,33 @@ export default function GuessWhoGame() {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <button className="px-3 py-2 rounded border border-slate-700 bg-slate-800 text-xs uppercase" onClick={hostWithCode}>Host with 6-Digit Code</button>
-              <div className="flex items-center gap-2 rounded border border-slate-700 bg-slate-950 px-2 py-1">
+              <button className="px-3 py-2 rounded border border-slate-300 bg-slate-50 text-xs uppercase" onClick={hostWithCode}>Host with 6-Digit Code</button>
+              <div className="flex items-center gap-2 rounded border border-slate-300 bg-slate-50 px-2 py-1">
                 <input
-                  className="w-28 bg-transparent text-center tracking-[0.35em] text-sm outline-none"
+                  className="w-28 bg-transparent text-center tracking-[0.35em] text-sm outline-none text-slate-900"
                   placeholder="000000"
                   maxLength={6}
                   value={joinCode}
                   onChange={(e) => setJoinCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                 />
-                <button className="px-2 py-1 rounded border border-slate-600 bg-slate-800 text-[11px] uppercase" onClick={joinWithCode}>Join</button>
+                <button className="px-2 py-1 rounded border border-slate-300 bg-white text-[11px] uppercase" onClick={joinWithCode}>Join</button>
               </div>
-              <button className="px-3 py-2 rounded border border-slate-700 bg-slate-800 text-xs uppercase disabled:opacity-50" onClick={copyRoomCode} disabled={!roomCode}>Copy Room Code</button>
+              <button className="px-3 py-2 rounded border border-slate-300 bg-slate-50 text-xs uppercase disabled:opacity-50" onClick={copyRoomCode} disabled={!roomCode}>Copy Room Code</button>
               <button className="px-3 py-2 rounded border border-rose-600 bg-rose-600/20 text-xs uppercase" onClick={teardownConnection}>Disconnect</button>
             </div>
 
-            <div className="text-[11px] text-slate-400 uppercase tracking-wider">
+            <div className="text-[11px] text-slate-500 uppercase tracking-wider">
               RTC: {rtcState} | Data channel: {channelState}
             </div>
-            <div className="text-sm font-bold tracking-[0.2em] text-amber-300 uppercase">
+            <div className="text-sm font-semibold tracking-[0.2em] text-slate-700 uppercase">
               Room Code: {roomCode || "------"}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-3 rounded border border-slate-700 bg-slate-950/70 space-y-2">
-                <div className="text-xs uppercase tracking-widest text-amber-300">Secret Character (Only you can see)</div>
+              <div className="p-3 rounded border border-slate-200 bg-slate-50 space-y-2">
+                <div className="text-xs uppercase tracking-widest text-slate-700">Secret Character (Only you can see)</div>
                 <select
-                  className="w-full px-3 py-2 rounded border border-slate-700 bg-black text-sm"
+                  className="w-full px-3 py-2 rounded border border-slate-300 bg-white text-sm"
                   value={mySecret}
                   onChange={(e) => {
                     setMySecret(e.target.value);
@@ -1028,14 +1032,14 @@ export default function GuessWhoGame() {
                   ))}
                 </select>
                 <button className="px-3 py-2 rounded border border-emerald-600 bg-emerald-500 text-black text-xs uppercase font-bold" onClick={lockSecret}>Lock Character</button>
-                <div className="text-xs text-slate-300">You: {myReady ? "Ready" : "Not Ready"} | Opponent: {opponentReady ? "Ready" : "Not Ready"}</div>
+                <div className="text-xs text-slate-600">You: {myReady ? "Ready" : "Not Ready"} | Opponent: {opponentReady ? "Ready" : "Not Ready"}</div>
                 <div className="text-[11px] text-slate-500">Opponent secret stored: {opponentSecret ? "Yes" : "Waiting..."}</div>
               </div>
 
-              <div className="p-3 rounded border border-slate-700 bg-slate-950/70 space-y-2">
-                <div className="text-xs uppercase tracking-widest text-amber-300">Guess Opponent Character</div>
+              <div className="p-3 rounded border border-slate-200 bg-slate-50 space-y-2">
+                <div className="text-xs uppercase tracking-widest text-slate-700">Guess Opponent Character</div>
                 <select
-                  className="w-full px-3 py-2 rounded border border-slate-700 bg-black text-sm"
+                  className="w-full px-3 py-2 rounded border border-slate-300 bg-white text-sm"
                   value={guessInput}
                   onChange={(e) => setGuessInput(e.target.value)}
                   disabled={!myReady || !opponentReady || !!roundWinner || !!matchWinner}
@@ -1046,11 +1050,11 @@ export default function GuessWhoGame() {
                   ))}
                 </select>
                 <button className="px-3 py-2 rounded border border-yellow-500 bg-yellow-400 text-black text-xs uppercase font-bold disabled:opacity-60" onClick={sendGuess} disabled={!guessInput || !myReady || !opponentReady || !!roundWinner || !!matchWinner}>Submit Guess</button>
-                <div className="text-xs text-slate-300">{lastGuessInfo || "No guesses yet."}</div>
+                <div className="text-xs text-slate-600">{lastGuessInfo || "No guesses yet."}</div>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-700">
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-200">
               <div className="text-sm font-bold">Round {roundNumber} | You {myScore} - {opponentScore} Opponent | First to {winsNeeded}</div>
               <div className="flex gap-2">
                 {roundWinner && !matchWinner && (
@@ -1062,7 +1066,7 @@ export default function GuessWhoGame() {
               </div>
             </div>
 
-            {roundWinner && <div className="text-sm text-amber-300">Round winner: {roundWinner === "me" ? "You" : "Opponent"}</div>}
+            {roundWinner && <div className="text-sm text-slate-700">Round winner: {roundWinner === "me" ? "You" : "Opponent"}</div>}
             {matchWinner && <div className="text-base text-emerald-300 font-bold">Match winner: {matchWinner === "me" ? "You" : "Opponent"}</div>}
           </div>
         </div>
