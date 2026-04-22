@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import type { DataConnection } from "peerjs";
 import { otherGames } from "../lib/other-games";
 import { animeCollections } from "../lib/anime-characters";
@@ -582,20 +582,27 @@ export default function GuessWhoGame() {
   const winsNeeded = matchFormat === "bo3" ? 2 : 3;
   const loadPeer = async () => (await import("peerjs")).default;
 
-  const gameCollections: Record<string, Character[]> = {
-    "Mobile Legends": characters,
-    ...((otherGames as Record<string, Character[]>) || {}),
-  };
+  const gameCollections = useMemo<Record<string, Character[]>>(
+    () => ({
+      "Mobile Legends": characters,
+      ...((otherGames as Record<string, Character[]>) || {}),
+    }),
+    []
+  );
 
-  const collectionsByMajor: Record<MajorMode, Record<string, Character[]>> = {
-    games: gameCollections,
-    manhwa: manhwaCollections as Record<string, Character[]>,
-    anime: animeCollections as Record<string, Character[]>,
-  };
+  const collectionsByMajor = useMemo<Record<MajorMode, Record<string, Character[]>>>(
+    () => ({
+      games: gameCollections,
+      manhwa: manhwaCollections as Record<string, Character[]>,
+      anime: animeCollections as Record<string, Character[]>,
+    }),
+    [gameCollections]
+  );
 
-  const currentCollections = collectionsByMajor[majorMode];
+  const currentCollections = useMemo(() => collectionsByMajor[majorMode], [collectionsByMajor, majorMode]);
+  const selectedSet = useMemo(() => new Set(selected), [selected]);
 
-  const startDashboardGame = (nextMajorMode: MajorMode, nextGameMode?: string) => {
+  const startDashboardGame = useCallback((nextMajorMode: MajorMode, nextGameMode?: string) => {
     const routeByMode: Record<MajorMode, string> = {
       games: "/games",
       anime: "/anime",
@@ -612,9 +619,9 @@ export default function GuessWhoGame() {
     if (pathname !== nextRoute) {
       router.push(nextRoute);
     }
-  };
+  }, [collectionsByMajor, pathname, router]);
 
-  const backToDashboard = () => {
+  const backToDashboard = useCallback(() => {
     setScreenMode("dashboard");
     setShowInfoPanels(true);
     setSelected([]);
@@ -623,7 +630,7 @@ export default function GuessWhoGame() {
     if (pathname !== "/") {
       router.push("/");
     }
-  };
+  }, [pathname, router]);
 
   useEffect(() => {
     if (!routeMajorMode) return;
@@ -633,14 +640,14 @@ export default function GuessWhoGame() {
     const firstCollection = Object.keys(collections)[0] || "Mobile Legends";
     setGameMode((prev) => (collections[prev] ? prev : firstCollection));
     setScreenMode("game");
-  }, [pathname]);
+  }, [routeMajorMode, collectionsByMajor]);
 
   useEffect(() => {
     const keys = Object.keys(currentCollections);
     if (!keys.includes(gameMode)) {
       setGameMode(keys[0] || "Mobile Legends");
     }
-  }, [majorMode]);
+  }, [currentCollections, gameMode]);
 
   useEffect(() => {
     const currentRoster = currentCollections[gameMode] || [];
@@ -953,13 +960,9 @@ export default function GuessWhoGame() {
     return () => teardownConnection();
   }, []);
 
-  const toggleSelection = (name: string) => {
-    if (selected.includes(name)) {
-      setSelected(selected.filter(n => n !== name));
-    } else {
-      setSelected([...selected, name]);
-    }
-  };
+  const toggleSelection = useCallback((name: string) => {
+    setSelected((prev) => (prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name]));
+  }, []);
 
   const lockSecret = () => {
     if (!mySecret) return;
@@ -1319,7 +1322,7 @@ export default function GuessWhoGame() {
       <div className="max-w-[1400px] mx-auto px-3 sm:px-6 lg:px-8 pb-20 flex flex-col items-center relative z-10">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-10 gap-2.5 sm:gap-4 w-full">
           {displayedCharacters.map((character) => {
-            const isSelected = selected.includes(character.name);
+            const isSelected = selectedSet.has(character.name);
             return (
               <div 
                 key={character.name}
