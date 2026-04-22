@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import Peer, { DataConnection } from "peerjs";
 import { otherGames } from "../lib/other-games";
+import { animeCollections } from "../lib/anime-characters";
+import { manhwaCollections } from "../lib/manhwa-characters";
 import Link from "next/link";
 import SimpleStatusChip from "@/components/game/SimpleStatusChip";
 
@@ -515,6 +517,7 @@ const heroes: Hero[] = [
 ];
 
 type MatchFormat = "bo3" | "bo5";
+type MajorMode = "games" | "manhwa" | "anime";
 
 type NetMessage =
   | { type: "format"; format: MatchFormat }
@@ -531,6 +534,7 @@ export default function GuessWhoGame() {
   const [selected, setSelected] = useState<string[]>([]);
   const [displayedHeroes, setDisplayedHeroes] = useState<Hero[]>([]);
   const [heroCount, setHeroCount] = useState<number | 'all'>(50);
+  const [majorMode, setMajorMode] = useState<MajorMode>("games");
   const [gameMode, setGameMode] = useState<string>("Mobile Legends");
   const [onlineMode, setOnlineMode] = useState<boolean>(false);
   const [matchFormat, setMatchFormat] = useState<MatchFormat>("bo3");
@@ -564,11 +568,28 @@ export default function GuessWhoGame() {
 
   const winsNeeded = matchFormat === "bo3" ? 2 : 3;
 
+  const gameCollections: Record<string, Hero[]> = {
+    "Mobile Legends": heroes,
+    ...((otherGames as Record<string, Hero[]>) || {}),
+  };
+
+  const collectionsByMajor: Record<MajorMode, Record<string, Hero[]>> = {
+    games: gameCollections,
+    manhwa: manhwaCollections as Record<string, Hero[]>,
+    anime: animeCollections as Record<string, Hero[]>,
+  };
+
+  const currentCollections = collectionsByMajor[majorMode];
+
   useEffect(() => {
-    let currentRoster = heroes;
-    if (gameMode !== "Mobile Legends") {
-      currentRoster = (otherGames as any)[gameMode] || [];
+    const keys = Object.keys(currentCollections);
+    if (!keys.includes(gameMode)) {
+      setGameMode(keys[0] || "Mobile Legends");
     }
+  }, [majorMode]);
+
+  useEffect(() => {
+    const currentRoster = currentCollections[gameMode] || [];
     setDisplayedHeroes(heroCount === 'all' ? currentRoster : currentRoster.slice(0, heroCount));
     setSelected([]);
     setMySecret("");
@@ -576,7 +597,7 @@ export default function GuessWhoGame() {
     setMyReady(false);
     setOpponentReady(false);
     setLastGuessInfo("");
-  }, [heroCount, gameMode]);
+  }, [heroCount, gameMode, majorMode]);
 
   useEffect(() => {
     if (!onlineMode || connectionStatus !== "connected") return;
@@ -925,13 +946,22 @@ export default function GuessWhoGame() {
               {onlineMode ? "Online Mode On" : "Online Mode Off"}
             </button>
             <select
-              title="Select Game Mode"
+              title="Select Major Mode"
+              className="px-3 py-2 rounded-md border border-white/20 bg-zinc-900 text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-white/20"
+              value={majorMode}
+              onChange={(e) => setMajorMode(e.target.value as MajorMode)}
+            >
+              <option value="games">Games</option>
+              <option value="manhwa">Manhwa</option>
+              <option value="anime">Anime</option>
+            </select>
+            <select
+              title="Select Collection"
               className="px-3 py-2 rounded-md border border-white/20 bg-zinc-900 text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-white/20"
               value={gameMode}
               onChange={(e) => setGameMode(e.target.value)}
             >
-              <option value="Mobile Legends">Mobile Legends</option>
-              {Object.keys(otherGames).map(game => (
+              {Object.keys(currentCollections).map((game) => (
                 <option key={game} value={game}>{game}</option>
               ))}
             </select>
