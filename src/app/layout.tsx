@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "MLBB- Guess Who",
-  description: "MLBB- Guess Who is a web-based game that challenges players to guess the name of a Mobile Legends: Bang Bang hero based on a silhouette. Players can choose from three difficulty levels: Easy, Medium, and Hard. Each level presents a different set of heroes with varying degrees of difficulty. The game is designed to be fun and engaging for fans of Mobile Legends: Bang Bang, allowing them to test their knowledge of the game's heroes while enjoying a simple and addictive guessing game.",
+  description: "MLBB- Guess Who is a web-based game that challenges players to guess the name of a Mobile Legends: Bang Bang character based on a silhouette. Players can choose from three difficulty levels: Easy, Medium, and Hard. Each level presents a different set of characters with varying degrees of difficulty. The game is designed to be fun and engaging for fans of Mobile Legends: Bang Bang, allowing them to test their knowledge of the game's characters while enjoying a simple and addictive guessing game.",
 };
 
 export default function RootLayout({

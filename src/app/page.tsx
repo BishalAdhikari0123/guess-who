@@ -8,12 +8,12 @@ import { manhwaCollections } from "../lib/manhwa-characters";
 import Link from "next/link";
 import SimpleStatusChip from "@/components/game/SimpleStatusChip";
 
-type Hero = {
+type Character = {
   name: string;
   image: string;
 };
 
-const heroes: Hero[] = [
+const characters: Character[] = [
   {
     "name": "Aamon",
     "image": "https://static.wikia.nocookie.net/mobile-legends/images/3/3b/Aamon.png"
@@ -532,8 +532,8 @@ type NetMessage =
 
 export default function GuessWhoGame() {
   const [selected, setSelected] = useState<string[]>([]);
-  const [displayedHeroes, setDisplayedHeroes] = useState<Hero[]>([]);
-  const [heroCount, setHeroCount] = useState<number | 'all'>(50);
+  const [displayedCharacters, setDisplayedCharacters] = useState<Character[]>([]);
+  const [characterCount, setCharacterCount] = useState<number | 'all'>(50);
   const [majorMode, setMajorMode] = useState<MajorMode>("games");
   const [gameMode, setGameMode] = useState<string>("Mobile Legends");
   const [onlineMode, setOnlineMode] = useState<boolean>(false);
@@ -568,15 +568,15 @@ export default function GuessWhoGame() {
 
   const winsNeeded = matchFormat === "bo3" ? 2 : 3;
 
-  const gameCollections: Record<string, Hero[]> = {
-    "Mobile Legends": heroes,
-    ...((otherGames as Record<string, Hero[]>) || {}),
+  const gameCollections: Record<string, Character[]> = {
+    "Mobile Legends": characters,
+    ...((otherGames as Record<string, Character[]>) || {}),
   };
 
-  const collectionsByMajor: Record<MajorMode, Record<string, Hero[]>> = {
+  const collectionsByMajor: Record<MajorMode, Record<string, Character[]>> = {
     games: gameCollections,
-    manhwa: manhwaCollections as Record<string, Hero[]>,
-    anime: animeCollections as Record<string, Hero[]>,
+    manhwa: manhwaCollections as Record<string, Character[]>,
+    anime: animeCollections as Record<string, Character[]>,
   };
 
   const currentCollections = collectionsByMajor[majorMode];
@@ -590,18 +590,18 @@ export default function GuessWhoGame() {
 
   useEffect(() => {
     const currentRoster = currentCollections[gameMode] || [];
-    setDisplayedHeroes(heroCount === 'all' ? currentRoster : currentRoster.slice(0, heroCount));
+    setDisplayedCharacters(characterCount === 'all' ? currentRoster : currentRoster.slice(0, characterCount));
     setSelected([]);
     setMySecret("");
     setOpponentSecret("");
     setMyReady(false);
     setOpponentReady(false);
     setLastGuessInfo("");
-  }, [heroCount, gameMode, majorMode]);
+  }, [characterCount, gameMode, majorMode]);
 
   useEffect(() => {
     if (!onlineMode || connectionStatus !== "connected") return;
-    const remaining = displayedHeroes.filter((h) => !selected.includes(h.name));
+    const remaining = displayedCharacters.filter((h) => !selected.includes(h.name));
     if (
       myReady &&
       opponentReady &&
@@ -621,7 +621,7 @@ export default function GuessWhoGame() {
       sendMessage({ type: "guess", name: onlyName });
       sendMessage({ type: "roundEnd", guess: onlyName, correct, winner });
     }
-  }, [onlineMode, connectionStatus, myReady, opponentReady, opponentSecret, roundWinner, matchWinner, selected, displayedHeroes, roundNumber]);
+  }, [onlineMode, connectionStatus, myReady, opponentReady, opponentSecret, roundWinner, matchWinner, selected, displayedCharacters, roundNumber]);
 
   useEffect(() => {
     if (!onlineMode || connectionStatus !== "connected") {
@@ -966,19 +966,19 @@ export default function GuessWhoGame() {
               ))}
             </select>
             <select
-              title="Select Hero Count"
+              title="Select Character Count"
               className="px-3 py-2 rounded-md border border-white/20 bg-zinc-900 text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-white/20"
-              value={heroCount}
+              value={characterCount}
               onChange={(e) => {
                 const val = e.target.value;
-                setHeroCount(val === 'all' ? 'all' : Number(val));
+                setCharacterCount(val === 'all' ? 'all' : Number(val));
                 setSelected([]);
               }}
             >
-              <option value={25}>25 Heroes</option>
-              <option value={50}>50 Heroes</option>
-              <option value={75}>75 Heroes</option>
-              <option value="all">All Heroes</option>
+              <option value={25}>25 Characters</option>
+              <option value={50}>50 Characters</option>
+              <option value={75}>75 Characters</option>
+              <option value="all">All Characters</option>
             </select>
             <button 
               className="px-4 py-2 rounded-md border border-white/20 bg-zinc-900 hover:bg-zinc-800 text-zinc-100 text-sm transition"
@@ -1057,7 +1057,7 @@ export default function GuessWhoGame() {
                   }}
                 >
                   <option value="">Select your secret character</option>
-                  {displayedHeroes.map((h) => (
+                  {displayedCharacters.map((h) => (
                     <option key={`secret-${h.name}`} value={h.name}>{h.name}</option>
                   ))}
                 </select>
@@ -1075,7 +1075,7 @@ export default function GuessWhoGame() {
                   disabled={!myReady || !opponentReady || !!roundWinner || !!matchWinner}
                 >
                   <option value="">Select your guess</option>
-                  {displayedHeroes.map((h) => (
+                  {displayedCharacters.map((h) => (
                     <option key={`guess-${h.name}`} value={h.name}>{h.name}</option>
                   ))}
                 </select>
@@ -1105,12 +1105,12 @@ export default function GuessWhoGame() {
       {/* Main Grid */}
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pb-20 flex flex-col items-center relative z-10">
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-10 gap-3 sm:gap-4 w-full">
-          {displayedHeroes.map((hero) => {
-            const isSelected = selected.includes(hero.name);
+          {displayedCharacters.map((character) => {
+            const isSelected = selected.includes(character.name);
             return (
               <div 
-                key={hero.name}
-                onClick={() => toggleSelection(hero.name)}
+                key={character.name}
+                onClick={() => toggleSelection(character.name)}
                 className={`group relative cursor-pointer transition-all duration-500 rounded-lg overflow-hidden shadow-xl aspect-[3/4] flex flex-col bg-slate-900 ${
                   isSelected 
                     ? "opacity-30 grayscale-[1] scale-[0.95] border border-zinc-700" 
@@ -1120,12 +1120,12 @@ export default function GuessWhoGame() {
                 {/* Image Section */}
                 <div className={`absolute inset-0 w-full h-full ${gameMode === "Cookie Run: Kingdom" ? "bg-slate-100" : "bg-black"}`}>
                   <img 
-                    src={hero.image} 
-                    alt={hero.name} 
+                    src={character.image} 
+                    alt={character.name} 
                     className={`w-full h-full object-contain p-1 transition-all duration-700 ${!isSelected ? "group-hover:scale-[1.08] group-hover:brightness-110" : ""}`}
                     referrerPolicy="no-referrer"
                     onError={(e) => {
-                      e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(hero.name)}&background=1e293b&color=f8fafc&size=256`;
+                      e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(character.name)}&background=1e293b&color=f8fafc&size=256`;
                     }}
                     loading="lazy"
                   />
@@ -1133,7 +1133,7 @@ export default function GuessWhoGame() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent pointer-events-none opacity-90" />
                   <div className="absolute inset-x-0 bottom-0 pb-3 pt-6 px-1 text-center pointer-events-none">
                     <span className="font-bold text-[11px] sm:text-[12px] tracking-widest text-slate-100 uppercase drop-shadow-[0_3px_5px_rgba(0,0,0,1)] break-words">
-                      {hero.name}
+                      {character.name}
                     </span>
                   </div>
                 </div>
