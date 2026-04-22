@@ -1,0 +1,14 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#050505"/>
+  <rect x="40" y="40" width="1120" height="550" rx="36" fill="#0A0A0A" stroke="#FFFFFF" stroke-opacity="0.14"/>
+  <text x="80" y="170" fill="#FFFFFF" font-size="74" font-family="Arial, Helvetica, sans-serif" font-weight="700">MLBB- Guess Who</text>
+  <text x="80" y="235" fill="#D4D4D8" font-size="34" font-family="Arial, Helvetica, sans-serif">Mobile Legends, anime, manhwa, and game characters</text>
+  <text x="80" y="300" fill="#A1A1AA" font-size="28" font-family="Arial, Helvetica, sans-serif">Fast elimination boards • 6-digit online rooms • SEO-ready</text>
+  <rect x="80" y="360" width="330" height="72" rx="18" fill="#FFFFFF"/>
+  <text x="110" y="406" fill="#000000" font-size="30" font-family="Arial, Helvetica, sans-serif" font-weight="700">Play now</text>
+  <circle cx="1020" cy="320" r="150" fill="#FFFFFF" fill-opacity="0.08"/>
+  <circle cx="1020" cy="320" r="96" fill="#FFFFFF" fill-opacity="0.14"/>
+  <rect x="940" y="240" width="160" height="160" rx="24" stroke="#FFFFFF" stroke-opacity="0.8" stroke-width="6"/>
+  <path d="M980 280L1060 360" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round"/>
+  <path d="M1060 280L980 360" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round"/>
+</svg>

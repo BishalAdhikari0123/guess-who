@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect, useRef } from "react";
-import Peer, { DataConnection } from "peerjs";
+import type { DataConnection } from "peerjs";
 import { otherGames } from "../lib/other-games";
 import { animeCollections } from "../lib/anime-characters";
 import { manhwaCollections } from "../lib/manhwa-characters";
@@ -12,6 +12,8 @@ type Character = {
   name: string;
   image: string;
 };
+
+type PeerInstance = import("peerjs").default;
 
 const characters: Character[] = [
   {
@@ -534,6 +536,7 @@ export default function GuessWhoGame() {
   const [selected, setSelected] = useState<string[]>([]);
   const [displayedCharacters, setDisplayedCharacters] = useState<Character[]>([]);
   const [characterCount, setCharacterCount] = useState<number | 'all'>(50);
+  const [showInfoPanels, setShowInfoPanels] = useState(true);
   const [majorMode, setMajorMode] = useState<MajorMode>("games");
   const [gameMode, setGameMode] = useState<string>("Mobile Legends");
   const [onlineMode, setOnlineMode] = useState<boolean>(false);
@@ -561,12 +564,13 @@ export default function GuessWhoGame() {
   const [roomCode, setRoomCode] = useState("");
   const [joinCode, setJoinCode] = useState("");
 
-  const peerRef = useRef<Peer | null>(null);
+  const peerRef = useRef<PeerInstance | null>(null);
   const connRef = useRef<DataConnection | null>(null);
   const autoGuessRoundRef = useRef<number>(-1);
   const heartbeatTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const winsNeeded = matchFormat === "bo3" ? 2 : 3;
+  const loadPeer = async () => (await import("peerjs")).default;
 
   const gameCollections: Record<string, Character[]> = {
     "Mobile Legends": characters,
@@ -736,6 +740,7 @@ export default function GuessWhoGame() {
     setConnectionStatus("hosting");
     setRtcState("creating-host");
 
+    const Peer = await loadPeer();
     const peer = new Peer(code);
     peerRef.current = peer;
 
@@ -772,6 +777,7 @@ export default function GuessWhoGame() {
     setConnectionStatus("joining");
     setRtcState("creating-client");
 
+    const Peer = await loadPeer();
     const peer = new Peer();
     peerRef.current = peer;
 
@@ -921,76 +927,125 @@ export default function GuessWhoGame() {
       {/* Dynamic Grid Background Overlay */}
       <div className="pointer-events-none absolute inset-0" />
 
-      {/* Sticky Header with Glassmorphism */}
-      <div className="sticky top-0 z-50 bg-neutral-950 border-b border-white/15 mb-6">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-6">
-          <div className="text-center sm:text-left">
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white m-0">
-              Guess The Character
-            </h1>
-            <p className="text-zinc-300 text-sm mt-1">Simple elimination board for offline and online play.</p>
-          </div>
-          <div className="flex flex-wrap justify-center gap-4">
-            <button
-              className={`px-4 py-2 rounded-md border font-medium text-xs uppercase transition-all ${onlineMode ? "border-white bg-white text-black" : "border-white/20 bg-zinc-900 text-zinc-200"}`}
-              onClick={() => {
-                const next = !onlineMode;
-                setOnlineMode(next);
-                if (!next) {
-                  teardownConnection();
-                  setRoomCode("");
-                  setJoinCode("");
-                }
-              }}
-            >
-              {onlineMode ? "Online Mode On" : "Online Mode Off"}
-            </button>
-            <select
-              title="Select Major Mode"
-              className="px-3 py-2 rounded-md border border-white/20 bg-zinc-900 text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-white/20"
-              value={majorMode}
-              onChange={(e) => setMajorMode(e.target.value as MajorMode)}
-            >
-              <option value="games">Games</option>
-              <option value="manhwa">Manhwa</option>
-              <option value="anime">Anime</option>
-            </select>
-            <select
-              title="Select Collection"
-              className="px-3 py-2 rounded-md border border-white/20 bg-zinc-900 text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-white/20"
-              value={gameMode}
-              onChange={(e) => setGameMode(e.target.value)}
-            >
-              {Object.keys(currentCollections).map((game) => (
-                <option key={game} value={game}>{game}</option>
-              ))}
-            </select>
-            <select
-              title="Select Character Count"
-              className="px-3 py-2 rounded-md border border-white/20 bg-zinc-900 text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-white/20"
-              value={characterCount}
-              onChange={(e) => {
-                const val = e.target.value;
-                setCharacterCount(val === 'all' ? 'all' : Number(val));
-                setSelected([]);
-              }}
-            >
-              <option value={25}>25 Characters</option>
-              <option value={50}>50 Characters</option>
-              <option value={75}>75 Characters</option>
-              <option value="all">All Characters</option>
-            </select>
-            <button 
-              className="px-4 py-2 rounded-md border border-white/20 bg-zinc-900 hover:bg-zinc-800 text-zinc-100 text-sm transition"
-              onClick={() => setSelected([])}
-            >
-              Reset Clicks
-            </button>
-            <Link href="/how-to-play" className="px-4 py-2 rounded-md border border-white/20 bg-zinc-900 hover:bg-zinc-800 text-zinc-100 text-sm">How to Play</Link>
-            <Link href="/modes" className="px-4 py-2 rounded-md border border-white/20 bg-zinc-900 hover:bg-zinc-800 text-zinc-100 text-sm">Modes</Link>
+      {/* Sticky Header */}
+      <div className="relative z-50 border-b border-white/10 bg-black/80 backdrop-blur-xl supports-[backdrop-filter]:bg-black/65 md:sticky md:top-0">
+        <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
+          <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-zinc-950/85 px-3 py-3 shadow-[0_20px_80px_rgba(0,0,0,0.35)] sm:gap-4 sm:px-4 sm:py-4 lg:flex-row lg:items-center lg:justify-between lg:px-5">
+            <div className="flex items-start gap-3 text-left lg:max-w-xl">
+              <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white text-black font-black tracking-tight">
+                G
+              </div>
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] sm:text-[11px] uppercase tracking-[0.18em] sm:tracking-[0.28em] text-zinc-300">
+                  Guess The Character
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                  Live
+                </div>
+                <p className="mt-2 text-xs sm:text-sm leading-5 sm:leading-6 text-zinc-300 max-w-2xl">
+                  Fast, image-rich elimination game for Mobile Legends, anime, manhwa, and other character collections — playable offline or with a 6-digit online room code.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 lg:items-end w-full lg:w-auto">
+              <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-center lg:justify-end">
+                <button
+                  className={`w-full sm:w-auto px-3 py-2 rounded-full border text-[11px] sm:text-xs font-semibold uppercase tracking-[0.14em] sm:tracking-[0.2em] transition ${onlineMode ? "border-white bg-white text-black" : "border-white/15 bg-white/5 text-zinc-200 hover:bg-white/10"}`}
+                  onClick={() => {
+                    const next = !onlineMode;
+                    setOnlineMode(next);
+                    if (!next) {
+                      teardownConnection();
+                      setRoomCode("");
+                      setJoinCode("");
+                    }
+                  }}
+                >
+                  {onlineMode ? "Online On" : "Online Off"}
+                </button>
+                <select
+                  title="Select Major Mode"
+                  className="w-full sm:w-auto appearance-none rounded-full border border-white/15 bg-zinc-950 px-3.5 py-2 text-sm text-zinc-100 outline-none ring-0 focus:border-white/30"
+                  value={majorMode}
+                  onChange={(e) => setMajorMode(e.target.value as MajorMode)}
+                >
+                  <option value="games">Games</option>
+                  <option value="manhwa">Manhwa</option>
+                  <option value="anime">Anime</option>
+                </select>
+                <select
+                  title="Select Collection"
+                  className="w-full sm:w-auto appearance-none rounded-full border border-white/15 bg-zinc-950 px-3.5 py-2 text-sm text-zinc-100 outline-none ring-0 focus:border-white/30"
+                  value={gameMode}
+                  onChange={(e) => setGameMode(e.target.value)}
+                >
+                  {Object.keys(currentCollections).map((game) => (
+                    <option key={game} value={game}>{game}</option>
+                  ))}
+                </select>
+                <select
+                  title="Select Character Count"
+                  className="w-full sm:w-auto appearance-none rounded-full border border-white/15 bg-zinc-950 px-3.5 py-2 text-sm text-zinc-100 outline-none ring-0 focus:border-white/30"
+                  value={characterCount}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setCharacterCount(val === 'all' ? 'all' : Number(val));
+                    setSelected([]);
+                  }}
+                >
+                  <option value={25}>25 Characters</option>
+                  <option value={50}>50 Characters</option>
+                  <option value={75}>75 Characters</option>
+                  <option value="all">All Characters</option>
+                </select>
+                <button
+                  className="w-full sm:w-auto rounded-full border border-white/15 bg-white/5 px-3.5 py-2 text-sm font-medium text-zinc-100 transition hover:bg-white/10"
+                  onClick={() => setSelected([])}
+                >
+                  Reset
+                </button>
+                <Link href="/how-to-play" className="w-full sm:w-auto rounded-full border border-white/15 bg-white/5 px-3.5 py-2 text-center text-sm font-medium text-zinc-100 transition hover:bg-white/10">
+                  How to Play
+                </Link>
+                <Link href="/modes" className="w-full sm:w-auto rounded-full border border-white/15 bg-white/5 px-3.5 py-2 text-center text-sm font-medium text-zinc-100 transition hover:bg-white/10">
+                  Modes
+                </Link>
+                <button
+                  className="col-span-2 w-full rounded-full border border-white/15 bg-white/5 px-3 py-2 text-sm font-medium text-zinc-100 transition hover:bg-white/10 sm:col-span-1 sm:w-auto"
+                  onClick={() => setShowInfoPanels((value) => !value)}
+                >
+                  {showInfoPanels ? "Hide Info" : "Show Info"}
+                </button>
+              </div>
+
+              <div className="flex flex-wrap justify-center gap-2 lg:justify-end">
+                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-zinc-300">SEO ready</span>
+                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-zinc-300">Fast load</span>
+                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-zinc-300">Ad space ready</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+
+      {showInfoPanels && (
+        <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 mt-4">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="rounded-xl border border-white/10 bg-zinc-950/70 p-4">
+            <p className="text-xs uppercase tracking-[0.25em] text-zinc-400">Fast loading</p>
+            <p className="mt-2 text-sm text-zinc-200">Lazy-loaded peer networking keeps the first paint lighter while the board stays responsive.</p>
+          </div>
+          <div className="rounded-xl border border-white/10 bg-zinc-950/70 p-4">
+            <p className="text-xs uppercase tracking-[0.25em] text-zinc-400">Search friendly</p>
+            <p className="mt-2 text-sm text-zinc-200">Dedicated mode pages, richer copy, and crawl files help Google understand the site.</p>
+          </div>
+          <div className="rounded-xl border border-white/10 bg-zinc-950/70 p-4">
+            <p className="text-xs uppercase tracking-[0.25em] text-zinc-400">Monetization ready</p>
+            <p className="mt-2 text-sm text-zinc-200">There is now a clean place for sponsor cards, affiliate links, or ads without crowding gameplay.</p>
+          </div>
+          </div>
+        </div>
+      )}
 
       {onlineMode && (
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pb-6 relative z-10">
@@ -1005,7 +1060,7 @@ export default function GuessWhoGame() {
               <div className="flex items-center gap-2">
                 <label className="text-xs uppercase tracking-widest text-zinc-400">Format</label>
                 <select
-                  className="px-3 py-2 rounded border border-white/20 bg-black text-sm text-zinc-100"
+                  className="appearance-none px-3 py-2 rounded border border-white/20 bg-zinc-950 text-sm text-zinc-100"
                   value={matchFormat}
                   onChange={(e) => {
                     const f = e.target.value as MatchFormat;
@@ -1046,7 +1101,7 @@ export default function GuessWhoGame() {
               <div className="p-3 rounded border border-white/15 bg-black space-y-2">
                 <div className="text-xs uppercase tracking-widest text-zinc-300">Secret Character (Only you can see)</div>
                 <select
-                  className="w-full px-3 py-2 rounded border border-white/20 bg-zinc-900 text-sm text-zinc-100"
+                  className="w-full appearance-none px-3 py-2 rounded border border-white/20 bg-zinc-950 text-sm text-zinc-100"
                   value={mySecret}
                   onChange={(e) => {
                     setMySecret(e.target.value);
@@ -1069,7 +1124,7 @@ export default function GuessWhoGame() {
               <div className="p-3 rounded border border-white/15 bg-black space-y-2">
                 <div className="text-xs uppercase tracking-widest text-zinc-300">Guess Opponent Character</div>
                 <select
-                  className="w-full px-3 py-2 rounded border border-white/20 bg-zinc-900 text-sm text-zinc-100"
+                  className="w-full appearance-none px-3 py-2 rounded border border-white/20 bg-zinc-950 text-sm text-zinc-100"
                   value={guessInput}
                   onChange={(e) => setGuessInput(e.target.value)}
                   disabled={!myReady || !opponentReady || !!roundWinner || !!matchWinner}
@@ -1103,8 +1158,8 @@ export default function GuessWhoGame() {
       )}
 
       {/* Main Grid */}
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pb-20 flex flex-col items-center relative z-10">
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-10 gap-3 sm:gap-4 w-full">
+      <div className="max-w-[1400px] mx-auto px-3 sm:px-6 lg:px-8 pb-20 flex flex-col items-center relative z-10">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-10 gap-2.5 sm:gap-4 w-full">
           {displayedCharacters.map((character) => {
             const isSelected = selected.includes(character.name);
             return (
@@ -1122,7 +1177,7 @@ export default function GuessWhoGame() {
                   <img 
                     src={character.image} 
                     alt={character.name} 
-                    className={`w-full h-full object-contain p-1 transition-all duration-700 ${!isSelected ? "group-hover:scale-[1.08] group-hover:brightness-110" : ""}`}
+                    className={`w-full h-full object-contain p-0.5 sm:p-1 transition-all duration-700 ${!isSelected ? "group-hover:scale-[1.06] group-hover:brightness-110" : ""}`}
                     referrerPolicy="no-referrer"
                     onError={(e) => {
                       e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(character.name)}&background=1e293b&color=f8fafc&size=256`;
@@ -1131,8 +1186,8 @@ export default function GuessWhoGame() {
                   />
                   {/* Subtle vignette gradient for text readability */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent pointer-events-none opacity-90" />
-                  <div className="absolute inset-x-0 bottom-0 pb-3 pt-6 px-1 text-center pointer-events-none">
-                    <span className="font-bold text-[11px] sm:text-[12px] tracking-widest text-slate-100 uppercase drop-shadow-[0_3px_5px_rgba(0,0,0,1)] break-words">
+                  <div className="absolute inset-x-0 bottom-0 pb-2.5 sm:pb-3 pt-5 sm:pt-6 px-1 text-center pointer-events-none">
+                    <span className="font-bold text-[10px] sm:text-[12px] leading-tight tracking-[0.12em] sm:tracking-widest text-slate-100 uppercase drop-shadow-[0_3px_5px_rgba(0,0,0,1)] break-words">
                       {character.name}
                     </span>
                   </div>
@@ -1151,6 +1206,30 @@ export default function GuessWhoGame() {
             );
           })}
         </div>
+
+        <section className="mt-10 w-full rounded-xl border border-white/15 bg-zinc-950/80 p-5 sm:p-6">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight">Support the game</h2>
+              <p className="mt-1 text-sm text-zinc-300">Reserved space for sponsorships, affiliate placements, and future ad units.</p>
+            </div>
+            <div className="text-xs uppercase tracking-[0.28em] text-zinc-400">Ad-ready placement</div>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            <div className="rounded-lg border border-dashed border-white/15 bg-black/50 p-4">
+              <p className="text-sm font-medium text-white">Sponsored banner</p>
+              <p className="mt-1 text-sm text-zinc-400">Ideal for a rotating sponsor or brand message.</p>
+            </div>
+            <div className="rounded-lg border border-dashed border-white/15 bg-black/50 p-4">
+              <p className="text-sm font-medium text-white">Affiliate block</p>
+              <p className="mt-1 text-sm text-zinc-400">Good spot for merch, gaming gear, or fandom links.</p>
+            </div>
+            <div className="rounded-lg border border-dashed border-white/15 bg-black/50 p-4">
+              <p className="text-sm font-medium text-white">Premium feature slot</p>
+              <p className="mt-1 text-sm text-zinc-400">Can hold a newsletter, donation CTA, or partner promo.</p>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
   );
