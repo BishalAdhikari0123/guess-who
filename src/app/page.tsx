@@ -517,6 +517,7 @@ type MatchFormat = "bo3" | "bo5";
 type NetMessage =
   | { type: "format"; format: MatchFormat }
   | { type: "ready"; ready: boolean }
+  | { type: "secretLocked"; name: string }
   | { type: "guess"; name: string }
   | { type: "guessResult"; name: string; correct: boolean }
   | { type: "nextRound" }
@@ -537,6 +538,7 @@ export default function GuessWhoGame() {
   const [roundWinner, setRoundWinner] = useState<"me" | "opponent" | null>(null);
   const [matchWinner, setMatchWinner] = useState<"me" | "opponent" | null>(null);
   const [mySecret, setMySecret] = useState<string>("");
+  const [opponentSecret, setOpponentSecret] = useState<string>("");
   const [myReady, setMyReady] = useState(false);
   const [opponentReady, setOpponentReady] = useState(false);
   const [guessInput, setGuessInput] = useState<string>("");
@@ -568,6 +570,7 @@ export default function GuessWhoGame() {
     setDisplayedHeroes(heroCount === 'all' ? currentRoster : currentRoster.slice(0, heroCount));
     setSelected([]);
     setMySecret("");
+    setOpponentSecret("");
     setMyReady(false);
     setOpponentReady(false);
     setLastGuessInfo("");
@@ -782,6 +785,7 @@ export default function GuessWhoGame() {
     setGuessInput("");
     setLastGuessInfo("");
     setMySecret("");
+    setOpponentSecret("");
     setMyReady(false);
     setOpponentReady(false);
     setRoundWinner(null);
@@ -800,6 +804,7 @@ export default function GuessWhoGame() {
     setGuessInput("");
     setLastGuessInfo("");
     setMySecret("");
+    setOpponentSecret("");
     setMyReady(false);
     setOpponentReady(false);
     autoGuessRoundRef.current = -1;
@@ -813,6 +818,10 @@ export default function GuessWhoGame() {
         break;
       case "ready":
         setOpponentReady(msg.ready);
+        break;
+      case "secretLocked":
+        setOpponentSecret(msg.name);
+        setLastGuessInfo("Opponent locked a secret character.");
         break;
       case "guess": {
         const correct = mySecret.length > 0 && msg.name === mySecret;
@@ -861,11 +870,15 @@ export default function GuessWhoGame() {
   const lockSecret = () => {
     if (!mySecret) return;
     setMyReady(true);
+    sendMessage({ type: "secretLocked", name: mySecret });
     sendMessage({ type: "ready", ready: true });
   };
 
   const sendGuess = () => {
     if (!guessInput || !myReady || !opponentReady || roundWinner || matchWinner) return;
+    const correct = !!opponentSecret && guessInput === opponentSecret;
+    setLastGuessInfo(`Your guess: ${guessInput} (${correct ? "correct" : "wrong"})`);
+    if (correct) concludeRound("me");
     sendMessage({ type: "guess", name: guessInput });
   };
 
@@ -1006,6 +1019,7 @@ export default function GuessWhoGame() {
                 </select>
                 <button className="px-3 py-2 rounded border border-emerald-600 bg-emerald-500 text-black text-xs uppercase font-bold" onClick={lockSecret}>Lock Character</button>
                 <div className="text-xs text-slate-300">You: {myReady ? "Ready" : "Not Ready"} | Opponent: {opponentReady ? "Ready" : "Not Ready"}</div>
+                <div className="text-[11px] text-slate-500">Opponent secret stored: {opponentSecret ? "Yes" : "Waiting..."}</div>
               </div>
 
               <div className="p-3 rounded border border-slate-700 bg-slate-950/70 space-y-2">
