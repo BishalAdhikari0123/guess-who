@@ -520,6 +520,7 @@ const characters: Character[] = [
 
 type MatchFormat = "bo3" | "bo5";
 type MajorMode = "games" | "manhwa" | "anime";
+type ScreenMode = "dashboard" | "game";
 
 type NetMessage =
   | { type: "format"; format: MatchFormat }
@@ -537,6 +538,7 @@ export default function GuessWhoGame() {
   const [displayedCharacters, setDisplayedCharacters] = useState<Character[]>([]);
   const [characterCount, setCharacterCount] = useState<number | 'all'>(50);
   const [showInfoPanels, setShowInfoPanels] = useState(true);
+  const [screenMode, setScreenMode] = useState<ScreenMode>("dashboard");
   const [majorMode, setMajorMode] = useState<MajorMode>("games");
   const [gameMode, setGameMode] = useState<string>("Mobile Legends");
   const [onlineMode, setOnlineMode] = useState<boolean>(false);
@@ -563,6 +565,7 @@ export default function GuessWhoGame() {
   const [lastSeenAt, setLastSeenAt] = useState<number | null>(null);
   const [roomCode, setRoomCode] = useState("");
   const [joinCode, setJoinCode] = useState("");
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
 
   const peerRef = useRef<PeerInstance | null>(null);
   const connRef = useRef<DataConnection | null>(null);
@@ -584,6 +587,22 @@ export default function GuessWhoGame() {
   };
 
   const currentCollections = collectionsByMajor[majorMode];
+
+  const startDashboardGame = (nextMajorMode: MajorMode, nextGameMode?: string) => {
+    setMajorMode(nextMajorMode);
+    const collections = collectionsByMajor[nextMajorMode];
+    const fallbackGame = nextGameMode && collections[nextGameMode] ? nextGameMode : Object.keys(collections)[0] || "Mobile Legends";
+    setGameMode(fallbackGame);
+    setScreenMode("game");
+  };
+
+  const backToDashboard = () => {
+    setScreenMode("dashboard");
+    setShowInfoPanels(true);
+    setSelected([]);
+    setGuessInput("");
+    setLastGuessInfo("");
+  };
 
   useEffect(() => {
     const keys = Object.keys(currentCollections);
@@ -802,7 +821,14 @@ export default function GuessWhoGame() {
 
   const copyRoomCode = async () => {
     if (!roomCode) return;
-    await navigator.clipboard.writeText(roomCode);
+    try {
+      await navigator.clipboard.writeText(roomCode);
+      setCopyState("copied");
+      setTimeout(() => setCopyState("idle"), 1800);
+    } catch {
+      setCopyState("error");
+      setTimeout(() => setCopyState("idle"), 2200);
+    }
   };
 
   const concludeRound = (winner: "me" | "opponent") => {
@@ -927,6 +953,89 @@ export default function GuessWhoGame() {
       {/* Dynamic Grid Background Overlay */}
       <div className="pointer-events-none absolute inset-0" />
 
+      {screenMode === "dashboard" && (
+        <div className="relative z-40 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-2">
+          <section className="rounded-3xl border border-white/10 bg-zinc-950/85 p-5 sm:p-6 lg:p-8 shadow-[0_20px_80px_rgba(0,0,0,0.35)]">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+              <div className="max-w-3xl">
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] sm:text-[11px] uppercase tracking-[0.22em] text-zinc-300">
+                  Dashboard
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                  Pick a mode
+                </div>
+                <h1 className="mt-4 text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight leading-tight">
+                  Start from one dashboard, then choose any game or series collection.
+                </h1>
+                <p className="mt-4 max-w-2xl text-sm sm:text-base leading-6 text-zinc-300">
+                  Pick your lane first — games, anime, or manhwa — then jump into the board with the same clean experience on phone, tablet, and desktop.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-end">
+                <button
+                  className="rounded-full border border-white/15 bg-white px-4 py-2 text-sm font-semibold uppercase tracking-[0.18em] text-black transition-all duration-150 active:scale-95"
+                  onClick={() => startDashboardGame("games")}
+                >
+                  Start Games
+                </button>
+                <button
+                  className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-semibold uppercase tracking-[0.18em] text-zinc-100 transition-all duration-150 active:scale-95"
+                  onClick={() => startDashboardGame("anime")}
+                >
+                  Start Anime
+                </button>
+                <button
+                  className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-semibold uppercase tracking-[0.18em] text-zinc-100 transition-all duration-150 active:scale-95"
+                  onClick={() => startDashboardGame("manhwa")}
+                >
+                  Start Manhwa
+                </button>
+                <button
+                  className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-semibold uppercase tracking-[0.18em] text-zinc-100 transition-all duration-150 active:scale-95"
+                  onClick={() => startDashboardGame("games")}
+                >
+                  Browse All
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-4 md:grid-cols-3">
+              <button
+                className="group rounded-2xl border border-white/10 bg-white/5 p-4 text-left transition-all duration-150 hover:-translate-y-1 hover:bg-white/10 active:scale-[0.99]"
+                onClick={() => startDashboardGame("games")}
+              >
+                <p className="text-xs uppercase tracking-[0.26em] text-zinc-400">Collection</p>
+                <h2 className="mt-2 text-xl font-semibold">Games Universe</h2>
+                <p className="mt-2 text-sm text-zinc-300">Open all game-based character boards and start from your preferred roster.</p>
+                <span className="mt-4 inline-flex rounded-full border border-white/10 bg-black/30 px-3 py-1 text-xs uppercase tracking-[0.18em] text-zinc-200">Open Games</span>
+              </button>
+
+              <button
+                className="group rounded-2xl border border-white/10 bg-white/5 p-4 text-left transition-all duration-150 hover:-translate-y-1 hover:bg-white/10 active:scale-[0.99]"
+                onClick={() => startDashboardGame("anime")}
+              >
+                <p className="text-xs uppercase tracking-[0.26em] text-zinc-400">Browse</p>
+                <h2 className="mt-2 text-xl font-semibold">Anime</h2>
+                <p className="mt-2 text-sm text-zinc-300">Jump into anime character collections with broad rosters and image-rich cards.</p>
+                <span className="mt-4 inline-flex rounded-full border border-white/10 bg-black/30 px-3 py-1 text-xs uppercase tracking-[0.18em] text-zinc-200">Open Anime</span>
+              </button>
+
+              <button
+                className="group rounded-2xl border border-white/10 bg-white/5 p-4 text-left transition-all duration-150 hover:-translate-y-1 hover:bg-white/10 active:scale-[0.99]"
+                onClick={() => startDashboardGame("manhwa")}
+              >
+                <p className="text-xs uppercase tracking-[0.26em] text-zinc-400">Browse</p>
+                <h2 className="mt-2 text-xl font-semibold">Manhwa</h2>
+                <p className="mt-2 text-sm text-zinc-300">Open manhwa collections and play with expanded character pools.</p>
+                <span className="mt-4 inline-flex rounded-full border border-white/10 bg-black/30 px-3 py-1 text-xs uppercase tracking-[0.18em] text-zinc-200">Open Manhwa</span>
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {screenMode === "game" && (
+      <>
+
       {/* Sticky Header */}
       <div className="relative z-50 border-b border-white/10 bg-black/80 backdrop-blur-xl supports-[backdrop-filter]:bg-black/65 md:sticky md:top-0">
         <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
@@ -950,7 +1059,13 @@ export default function GuessWhoGame() {
             <div className="flex flex-col gap-3 lg:items-end w-full lg:w-auto">
               <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-center lg:justify-end">
                 <button
-                  className={`w-full sm:w-auto px-3 py-2 rounded-full border text-[11px] sm:text-xs font-semibold uppercase tracking-[0.14em] sm:tracking-[0.2em] transition ${onlineMode ? "border-white bg-white text-black" : "border-white/15 bg-white/5 text-zinc-200 hover:bg-white/10"}`}
+                  className="w-full sm:w-auto rounded-full border border-white/15 bg-white/5 px-3 py-2 text-sm font-medium text-zinc-100 transition-all duration-150 hover:bg-white/10 active:scale-95 active:opacity-90"
+                  onClick={backToDashboard}
+                >
+                  Dashboard
+                </button>
+                <button
+                  className={`w-full sm:w-auto px-3 py-2 rounded-full border text-[11px] sm:text-xs font-semibold uppercase tracking-[0.14em] sm:tracking-[0.2em] transition-all duration-150 active:scale-95 active:opacity-90 ${onlineMode ? "border-white bg-white text-black" : "border-white/15 bg-white/5 text-zinc-200 hover:bg-white/10"}`}
                   onClick={() => {
                     const next = !onlineMode;
                     setOnlineMode(next);
@@ -999,7 +1114,7 @@ export default function GuessWhoGame() {
                   <option value="all">All Characters</option>
                 </select>
                 <button
-                  className="w-full sm:w-auto rounded-full border border-white/15 bg-white/5 px-3.5 py-2 text-sm font-medium text-zinc-100 transition hover:bg-white/10"
+                  className="w-full sm:w-auto rounded-full border border-white/15 bg-white/5 px-3.5 py-2 text-sm font-medium text-zinc-100 transition-all duration-150 hover:bg-white/10 active:scale-95 active:opacity-90"
                   onClick={() => setSelected([])}
                 >
                   Reset
@@ -1011,7 +1126,7 @@ export default function GuessWhoGame() {
                   Modes
                 </Link>
                 <button
-                  className="col-span-2 w-full rounded-full border border-white/15 bg-white/5 px-3 py-2 text-sm font-medium text-zinc-100 transition hover:bg-white/10 sm:col-span-1 sm:w-auto"
+                  className="col-span-2 w-full rounded-full border border-white/15 bg-white/5 px-3 py-2 text-sm font-medium text-zinc-100 transition-all duration-150 hover:bg-white/10 active:scale-95 active:opacity-90 sm:col-span-1 sm:w-auto"
                   onClick={() => setShowInfoPanels((value) => !value)}
                 >
                   {showInfoPanels ? "Hide Info" : "Show Info"}
@@ -1075,7 +1190,7 @@ export default function GuessWhoGame() {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <button className="px-3 py-2 rounded border border-white/20 bg-zinc-900 text-xs uppercase" onClick={hostWithCode}>Host with 6-Digit Code</button>
+              <button className="px-3 py-2 rounded border border-white/20 bg-zinc-900 text-xs uppercase transition-all duration-150 active:scale-95 active:opacity-90" onClick={hostWithCode}>Host with 6-Digit Code</button>
               <div className="flex items-center gap-2 rounded border border-white/20 bg-zinc-900 px-2 py-1">
                 <input
                   className="w-28 bg-transparent text-center tracking-[0.35em] text-sm outline-none text-zinc-100"
@@ -1084,10 +1199,22 @@ export default function GuessWhoGame() {
                   value={joinCode}
                   onChange={(e) => setJoinCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                 />
-                <button className="px-2 py-1 rounded border border-white/20 bg-black text-[11px] uppercase text-zinc-100" onClick={joinWithCode}>Join</button>
+                <button className="px-2 py-1 rounded border border-white/20 bg-black text-[11px] uppercase text-zinc-100 transition-all duration-150 active:scale-95 active:opacity-90" onClick={joinWithCode}>Join</button>
               </div>
-              <button className="px-3 py-2 rounded border border-white/20 bg-zinc-900 text-xs uppercase disabled:opacity-50" onClick={copyRoomCode} disabled={!roomCode}>Copy Room Code</button>
-              <button className="px-3 py-2 rounded border border-white/25 bg-black text-xs uppercase" onClick={teardownConnection}>Disconnect</button>
+              <button
+                className={`px-3 py-2 rounded border text-xs uppercase transition-all duration-150 active:scale-95 active:opacity-90 disabled:opacity-50 ${
+                  copyState === "copied"
+                    ? "border-emerald-400/70 bg-emerald-500/10 text-emerald-300"
+                    : copyState === "error"
+                    ? "border-red-400/70 bg-red-500/10 text-red-300"
+                    : "border-white/20 bg-zinc-900 text-zinc-100"
+                }`}
+                onClick={copyRoomCode}
+                disabled={!roomCode}
+              >
+                {copyState === "copied" ? "Copied!" : copyState === "error" ? "Copy Failed" : "Copy Room Code"}
+              </button>
+              <button className="px-3 py-2 rounded border border-white/25 bg-black text-xs uppercase transition-all duration-150 active:scale-95 active:opacity-90" onClick={teardownConnection}>Disconnect</button>
             </div>
 
             <div className="text-[11px] text-zinc-400 uppercase tracking-wider">
@@ -1134,7 +1261,7 @@ export default function GuessWhoGame() {
                     <option key={`guess-${h.name}`} value={h.name}>{h.name}</option>
                   ))}
                 </select>
-                <button className="px-3 py-2 rounded border border-white/25 bg-white text-black text-xs uppercase font-semibold disabled:opacity-60" onClick={sendGuess} disabled={!guessInput || !myReady || !opponentReady || !!roundWinner || !!matchWinner}>Submit Guess</button>
+                <button className="px-3 py-2 rounded border border-white/25 bg-white text-black text-xs uppercase font-semibold transition-all duration-150 active:scale-95 active:opacity-90 disabled:opacity-60" onClick={sendGuess} disabled={!guessInput || !myReady || !opponentReady || !!roundWinner || !!matchWinner}>Submit Guess</button>
                 <div className="text-xs text-zinc-300">{lastGuessInfo || "No guesses yet."}</div>
               </div>
             </div>
@@ -1143,10 +1270,10 @@ export default function GuessWhoGame() {
               <div className="text-sm font-bold">Round {roundNumber} | You {myScore} - {opponentScore} Opponent | First to {winsNeeded}</div>
               <div className="flex gap-2">
                 {roundWinner && !matchWinner && (
-                  <button className="px-3 py-2 rounded border border-white/25 bg-zinc-900 text-xs uppercase" onClick={() => resetRound(true)}>Next Round</button>
+                  <button className="px-3 py-2 rounded border border-white/25 bg-zinc-900 text-xs uppercase transition-all duration-150 active:scale-95 active:opacity-90" onClick={() => resetRound(true)}>Next Round</button>
                 )}
                 {matchWinner && (
-                  <button className="px-3 py-2 rounded border border-white/25 bg-zinc-900 text-xs uppercase" onClick={() => resetMatch(true)}>Reset Match</button>
+                  <button className="px-3 py-2 rounded border border-white/25 bg-zinc-900 text-xs uppercase transition-all duration-150 active:scale-95 active:opacity-90" onClick={() => resetMatch(true)}>Reset Match</button>
                 )}
               </div>
             </div>
@@ -1231,6 +1358,8 @@ export default function GuessWhoGame() {
           </div>
         </section>
       </div>
+      </>
+      )}
     </main>
   );
 }
