@@ -6,6 +6,7 @@ import { otherGames } from "../lib/other-games";
 import { animeCollections } from "../lib/anime-characters";
 import { manhwaCollections } from "../lib/manhwa-characters";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import SimpleStatusChip from "@/components/game/SimpleStatusChip";
 
 type Character = {
@@ -534,12 +535,18 @@ type NetMessage =
   | { type: "pong"; at: number };
 
 export default function GuessWhoGame() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const routeMajorMode: MajorMode | null =
+    pathname === "/anime" ? "anime" : pathname === "/manhwa" ? "manhwa" : pathname === "/games" ? "games" : null;
+  const isModeRoute = routeMajorMode !== null;
+
   const [selected, setSelected] = useState<string[]>([]);
   const [displayedCharacters, setDisplayedCharacters] = useState<Character[]>([]);
   const [characterCount, setCharacterCount] = useState<number | 'all'>(50);
   const [showInfoPanels, setShowInfoPanels] = useState(true);
-  const [screenMode, setScreenMode] = useState<ScreenMode>("dashboard");
-  const [majorMode, setMajorMode] = useState<MajorMode>("games");
+  const [screenMode, setScreenMode] = useState<ScreenMode>(isModeRoute ? "game" : "dashboard");
+  const [majorMode, setMajorMode] = useState<MajorMode>(routeMajorMode ?? "games");
   const [gameMode, setGameMode] = useState<string>("Mobile Legends");
   const [onlineMode, setOnlineMode] = useState<boolean>(false);
   const [matchFormat, setMatchFormat] = useState<MatchFormat>("bo3");
@@ -589,11 +596,22 @@ export default function GuessWhoGame() {
   const currentCollections = collectionsByMajor[majorMode];
 
   const startDashboardGame = (nextMajorMode: MajorMode, nextGameMode?: string) => {
+    const routeByMode: Record<MajorMode, string> = {
+      games: "/games",
+      anime: "/anime",
+      manhwa: "/manhwa",
+    };
+
     setMajorMode(nextMajorMode);
     const collections = collectionsByMajor[nextMajorMode];
     const fallbackGame = nextGameMode && collections[nextGameMode] ? nextGameMode : Object.keys(collections)[0] || "Mobile Legends";
     setGameMode(fallbackGame);
     setScreenMode("game");
+
+    const nextRoute = routeByMode[nextMajorMode];
+    if (pathname !== nextRoute) {
+      router.push(nextRoute);
+    }
   };
 
   const backToDashboard = () => {
@@ -602,7 +620,20 @@ export default function GuessWhoGame() {
     setSelected([]);
     setGuessInput("");
     setLastGuessInfo("");
+    if (pathname !== "/") {
+      router.push("/");
+    }
   };
+
+  useEffect(() => {
+    if (!routeMajorMode) return;
+
+    setMajorMode(routeMajorMode);
+    const collections = collectionsByMajor[routeMajorMode];
+    const firstCollection = Object.keys(collections)[0] || "Mobile Legends";
+    setGameMode((prev) => (collections[prev] ? prev : firstCollection));
+    setScreenMode("game");
+  }, [pathname]);
 
   useEffect(() => {
     const keys = Object.keys(currentCollections);
@@ -953,7 +984,7 @@ export default function GuessWhoGame() {
       {/* Dynamic Grid Background Overlay */}
       <div className="pointer-events-none absolute inset-0" />
 
-      {screenMode === "dashboard" && (
+      {screenMode === "dashboard" && pathname === "/" && (
         <div className="relative z-40 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-2">
           <section className="rounded-3xl border border-white/10 bg-zinc-950/85 p-5 sm:p-6 lg:p-8 shadow-[0_20px_80px_rgba(0,0,0,0.35)]">
             <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
